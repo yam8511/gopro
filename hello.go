@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"net/http"
 	"net/rpc"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 // Arith 數學運算
@@ -22,6 +22,7 @@ type Args struct {
 
 // Sum 總和
 func (t *Arith) Sum(args *Args, sum *int) error {
+	time.Sleep(time.Second * 3)
 	*sum = args.A + args.B
 	return nil
 }
@@ -48,42 +49,56 @@ func main() {
 	}
 
 	arith := new(Arith)
-	rpc.Register(arith)
-	rpc.HandleHTTP()
+	rpc.RegisterName("arith", arith)
 	l, e := net.Listen("tcp", *address)
 	if e != nil {
 		log.Fatal("listen error:", e)
 	}
 
+	sig := make(chan os.Signal)
+	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
+	c := make(chan int)
 	go func(l net.Listener) {
-		sig := make(chan os.Signal)
-		signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
 		select {
 		case s := <-sig:
-			log.Printf("\nReceived a signal, shutdown by ... %v", s)
+			log.Printf("... Receive signal, shutdown by ... %v", s)
+			close(c)
+			l.Close()
 		}
-		l.Close()
 	}(l)
 
 	log.Println("Server Listening ... ", *address)
-	err := http.Serve(l, nil)
-	if err != nil {
-		log.Println(err)
+
+	for {
+		conn, err := l.Accept()
+		if err != nil {
+			select {
+			case <-c:
+				return
+			default:
+				log.Println("Error: accept rpc connection ->", err)
+			}
+			continue
+		}
+		log.Println("Accep rpc connection")
+		rpc.ServeConn(conn)
 	}
 
 }
 
 func runClient(address string) {
-	client, err := rpc.DialHTTP("tcp", address)
+	client, err := rpc.Dial("tcp", address)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer client.Close()
 
-	args := &Args{7, 8}
+	var args interface{}
+	args = &Args{7, 8}
 	var sum int
-	err = client.Call("Arith.Sum", args, &sum)
+	err = client.Call("arith.Sum", args, &sum)
 	if err != nil {
 		log.Fatal("arith error:", err)
 	}
-	fmt.Printf("Arith: %d + %d = %d", args.A, args.B, sum)
+	fmt.Printf("Arith: req -> %v , res -> %v", args, sum)
 }
