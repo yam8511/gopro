@@ -6,6 +6,22 @@ import (
 	"net/http"
 )
 
+// 比較偏向機器or連線上的錯誤，而且給外部看
+const (
+	// Parse error
+	E_PARSE int = -32700
+	// Invalid Request
+	E_INVALID_REQ int = -32600
+	// Method not found
+	E_NO_METHOD int = -32601
+	// Invalid params
+	E_BAD_PARAMS int = -32602
+	// Internal error
+	E_INTERNAL int = -32603
+	// Server error (-32000 to -32099)
+	E_SERVER int = -32000
+)
+
 // Handler HTTP處理
 type Handler int
 
