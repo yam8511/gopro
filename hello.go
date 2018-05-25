@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"net/rpc"
+	"net/rpc/jsonrpc"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 )
@@ -22,7 +25,7 @@ type Args struct {
 
 // Sum 總和
 func (t *Arith) Sum(args *Args, sum *int) error {
-	time.Sleep(time.Second * 3)
+	time.Sleep(time.Second * 1)
 	*sum = args.A + args.B
 	return nil
 }
@@ -34,25 +37,40 @@ func (t *Arith) Diff(args *Args, diff *int) error {
 }
 
 func main() {
-	address := flag.String("address", ":50051", "the address for server listening")
-	advertise := flag.String("advertise", "", "the address for call")
+	rpcAddress := flag.String("rpc_address", ":50051", "the address for server listening")
+	jsonrpcAddress := flag.String("jsonrpc_address", ":50052", "the address for server listening")
+	httpAddress := flag.String("http_address", ":8888", "the address for server listening")
+	timeout := flag.Int("timeout", 5, "Connection Timeout")
 	isClient := flag.Bool("c", false, "if run client")
 	flag.Parse()
 
 	if *isClient {
-		runClient(*address)
+		runRPCClient(*rpcAddress)
+		runJSONRPCClient(*jsonrpcAddress)
 		return
 	}
 
-	if *advertise == "" {
-		advertise = address
+	arith := new(Arith)
+	// RPC
+	rpc.RegisterName("arith", arith)
+	l, e := net.Listen("tcp", *rpcAddress)
+	if e != nil {
+		log.Fatal("rpc listen error:", e)
 	}
 
-	arith := new(Arith)
-	rpc.RegisterName("arith", arith)
-	l, e := net.Listen("tcp", *address)
+	// JSON-RPC
+	j, e := net.Listen("tcp", *jsonrpcAddress)
 	if e != nil {
-		log.Fatal("listen error:", e)
+		log.Fatal("jsonrpc listen error:", e)
+	}
+
+	// HTTP
+	h, e := net.Listen("tcp", *httpAddress)
+	if e != nil {
+		log.Fatal("http listen error:", e)
+	}
+	httpServer := http.Server{
+		Handler: new(Handler),
 	}
 
 	sig := make(chan os.Signal)
@@ -64,29 +82,78 @@ func main() {
 			log.Printf("... Receive signal, shutdown by ... %v", s)
 			close(c)
 			l.Close()
+			j.Close()
+			httpServer.Close()
 		}
 	}(l)
 
-	log.Println("Server Listening ... ", *address)
+	wg := new(sync.WaitGroup)
+	wg.Add(3)
 
-	for {
-		conn, err := l.Accept()
+	// RPC
+	go func() {
+		defer wg.Done()
+		for {
+			conn, err := l.Accept()
+			if err != nil {
+				select {
+				case <-c:
+					return
+				default:
+					log.Println("Error: accept rpc connection ->", err)
+				}
+				continue
+			}
+			log.Println("Accep rpc connection")
+			// 設定連線timeout
+			conn.SetDeadline(time.Now().Add(time.Second * time.Duration(*timeout)))
+			go rpc.ServeConn(conn)
+		}
+	}()
+
+	// JSON-RPC
+	go func() {
+		defer wg.Done()
+		for {
+			conn, err := j.Accept()
+			if err != nil {
+				select {
+				case <-c:
+					return
+				default:
+					log.Println("Error: accept jsonrpc connection ->", err)
+				}
+				continue
+			}
+			log.Println("Accep jsonrpc connection")
+			// 設定連線timeout
+			conn.SetDeadline(time.Now().Add(time.Second * time.Duration(*timeout)))
+			go jsonrpc.ServeConn(conn)
+		}
+	}()
+
+	// HTTP
+	go func() {
+		defer wg.Done()
+		err := httpServer.Serve(h)
 		if err != nil {
 			select {
 			case <-c:
 				return
 			default:
-				log.Println("Error: accept rpc connection ->", err)
+				log.Println("Error: accept http connection ->", err)
 			}
-			continue
 		}
-		log.Println("Accep rpc connection")
-		rpc.ServeConn(conn)
-	}
+	}()
 
+	log.Println("RPC Server Listening ... ", *rpcAddress)
+	log.Println("JSON-RPC Server Listening ... ", *jsonrpcAddress)
+	log.Println("HTTP Server Listening ... ", *httpAddress)
+
+	wg.Wait()
 }
 
-func runClient(address string) {
+func runRPCClient(address string) {
 	client, err := rpc.Dial("tcp", address)
 	if err != nil {
 		log.Fatal(err)
@@ -100,5 +167,33 @@ func runClient(address string) {
 	if err != nil {
 		log.Fatal("arith error:", err)
 	}
-	fmt.Printf("Arith: req -> %v , res -> %v", args, sum)
+	fmt.Printf("Arith: req -> %v , res -> %v\n", args, sum)
+}
+
+func runJSONRPCClient(address string) {
+	client, err := jsonrpc.Dial("tcp", address)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	var args interface{}
+	args = &Args{7, 8}
+	var sum int
+	err = client.Call("arith.Sum", args, &sum)
+	if err != nil {
+		log.Fatal("arith error:", err)
+	}
+	fmt.Printf("Arith: req -> %v , res -> %v\n", args, sum)
+}
+
+func transferJSONRPCClient(address, method string, params interface{}) (res interface{}, err error) {
+	client, dialErr := jsonrpc.Dial("tcp", address)
+	if dialErr != nil {
+		err = dialErr
+		return
+	}
+	defer client.Close()
+	err = client.Call(method, params, &res)
+	return
 }
