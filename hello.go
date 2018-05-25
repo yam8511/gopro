@@ -104,7 +104,7 @@ func main() {
 				}
 				continue
 			}
-			log.Println("Accep rpc connection")
+			log.Println("Accept rpc connection")
 			// 設定連線timeout
 			conn.SetDeadline(time.Now().Add(time.Second * time.Duration(*timeout)))
 			go rpc.ServeConn(conn)
@@ -125,7 +125,7 @@ func main() {
 				}
 				continue
 			}
-			log.Println("Accep jsonrpc connection")
+			log.Println("Accept jsonrpc connection")
 			// 設定連線timeout
 			conn.SetDeadline(time.Now().Add(time.Second * time.Duration(*timeout)))
 			go jsonrpc.ServeConn(conn)
