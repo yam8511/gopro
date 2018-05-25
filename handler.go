@@ -23,9 +23,10 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Data    interface{} `json:"data"`
 	}
 	type Output struct {
-		Result interface{} `json:"result"`
-		Error  interface{} `json:"error"`
-		ID     int         `json:"id"`
+		JSONRPC string      `json:"jsonrpc"`
+		Result  interface{} `json:"result"`
+		Error   interface{} `json:"error"`
+		ID      int         `json:"id"`
 	}
 	w.Header().Set("Content-Type", "application/json")
 	var data Input
@@ -33,7 +34,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("JSON Error ->", err)
 		json.NewEncoder(w).Encode(Output{
-			Result: nil,
+			JSONRPC: "2.0",
+			Result:  nil,
 			Error: ErrorDetail{
 				Code:    500,
 				Message: err.Error(),
@@ -52,7 +54,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("Call Error ->", err)
 		json.NewEncoder(w).Encode(Output{
-			Result: nil,
+			JSONRPC: "2.0",
+			Result:  nil,
 			Error: ErrorDetail{
 				Code:    500,
 				Message: err.Error(),
@@ -64,9 +67,10 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = json.NewEncoder(w).Encode(Output{
-		Result: res,
-		Error:  nil,
-		ID:     data.ID,
+		JSONRPC: "2.0",
+		Result:  res,
+		Error:   nil,
+		ID:      data.ID,
 	})
 	if err != nil {
 		log.Println("Response Encode Error ->", err)
