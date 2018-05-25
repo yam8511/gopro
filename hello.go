@@ -146,9 +146,9 @@ func main() {
 		}
 	}()
 
-	log.Println("RPC Server Listening ... ", *rpcAddress)
-	log.Println("JSON-RPC Server Listening ... ", *jsonrpcAddress)
-	log.Println("HTTP Server Listening ... ", *httpAddress)
+	log.Println("RPC Server Listening ... ", l.Addr().Network(), l.Addr().String())
+	log.Println("JSON-RPC Server Listening ... ", j.Addr().Network(), j.Addr().String())
+	log.Println("HTTP Server Listening ... ", h.Addr().Network(), h.Addr().String())
 
 	wg.Wait()
 }
