@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 )
+import "net/http/pprof"
 
 // 比較偏向機器or連線上的錯誤，而且給外部看
 const (
@@ -27,6 +29,35 @@ type Handler int
 
 // ServeHTTP 服務處理
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.RequestURI == "/favicon.ico" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	// log.Println("Req -> ", r.URL.EscapedPath())
+	switch r.URL.EscapedPath() {
+	case "/debug/pprof/cmdline":
+		pprof.Cmdline(w, r)
+		return
+	case "/debug/pprof/profile":
+		pprof.Profile(w, r)
+		return
+	case "/debug/pprof/symbol":
+		pprof.Symbol(w, r)
+		return
+	case "/debug/pprof/trace":
+		pprof.Trace(w, r)
+		return
+	}
+	if strings.HasPrefix(r.RequestURI, "/debug/") {
+		r.URL.Path = strings.Replace(r.URL.Path, "/debug/pprof", "/debug", 1)
+		// log.Println("#1 Req -> ", r.URL.Path)
+		r.URL.Path = strings.Replace(r.URL.Path, "/debug", "/debug/pprof", 1)
+		// log.Println("#2 Req -> ", r.URL.Path)
+		pprof.Index(w, r)
+		return
+	}
+	// log.Println("Not Debug Req -> ", r.RequestURI)
+
 	type Input struct {
 		Method  string      `json:"method"`
 		Params  interface{} `json:"params"`
