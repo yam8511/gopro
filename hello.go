@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/sjwhitworth/golearn/base"       // 讀取數據
 	"github.com/sjwhitworth/golearn/evaluation" // 評估模型
@@ -27,7 +28,10 @@ func main() {
 		return
 	}
 
+	allTime := time.Now()
+
 	// 讀取資料
+	log.Println("讀取檔案 -> ", *rawDataFile)
 	rawData, err := base.ParseCSVToInstances(*rawDataFile, true)
 	if err != nil {
 		panic(err)
@@ -35,29 +39,73 @@ func main() {
 
 	// 將資料切分成訓練資料與測試資料
 	trainData, testData := base.InstancesTrainTestSplit(rawData, *percent)
+	_, trainCount := trainData.Size()
+	_, testCount := testData.Size()
+	log.Printf("切分訓練資料(%d)與測試資料(%d)", trainCount, testCount)
 
 	// 建立一個訓練用的工具，cls即是Model
 	cls := knn.NewKnnClassifier(*distanceArg, *algorithmArg, *specify)
 
 	// 開始訓練
-	err = cls.Fit(trainData)
-	if err != nil {
-		panic(err)
+	trainTime := time.Now()
+	wait := make(chan int)
+	done := false
+	go func() {
+		log.Println("=== 開始訓練 ===")
+		err = cls.Fit(trainData)
+		if err != nil {
+			panic(err)
+		}
+		wait <- 0
+	}()
+
+	for {
+		if done {
+			break
+		}
+		select {
+		case <-time.After(time.Second * 10):
+			log.Println("訓練中...")
+		case <-wait:
+			done = true
+			break
+		}
 	}
+	log.Println("訓練完畢！耗費時間 -> ", time.Since(trainTime))
 
 	// 儲存Model
+	log.Println("儲存 Model -> ", *outputModelFile)
 	err = cls.Save(*outputModelFile)
 	if err != nil {
 		panic(err)
 	}
 
-	log.Println("測試資料 -> ", testData)
-
 	// 預測測試資料
-	prediction, err := cls.Predict(testData)
-	if err != nil {
-		panic(err)
+	log.Println("測試資料 -> ", testData)
+	log.Println("=== 開始預測 ===")
+	var prediction base.FixedDataGrid
+	done = false
+	go func() {
+		prediction, err = cls.Predict(testData)
+		if err != nil {
+			panic(err)
+		}
+		wait <- 0
+	}()
+
+	for {
+		if done {
+			break
+		}
+		select {
+		case <-time.After(time.Second * 10):
+		case <-wait:
+			done = true
+			break
+		}
 	}
+	log.Println("預測完畢！耗費時間 -> ", time.Since(trainTime))
+
 	// 顯示預測結果
 	log.Println("預測結果 -> ", prediction)
 
@@ -69,4 +117,5 @@ func main() {
 
 	// 顯示評估結果
 	fmt.Println(evaluation.GetSummary(confusionMat))
+	log.Println("程式執行總時間 -> ", time.Since(allTime))
 }
