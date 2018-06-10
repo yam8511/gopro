@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 
@@ -10,17 +11,33 @@ import (
 )
 
 func main() {
+	rawDataFile := flag.String("r", "", "原始資料的檔案 [.csv]")
+	outputModelFile := flag.String("o", "default.model", "輸出訓練模型 [.model]")
+	percent := flag.Float64("p", 0.5, "將原始資料的百分之N切分到測試資料")
+	specify := flag.Int("s", 2, "特徵點交叉數量")
+	distanceArg := flag.String("d", "euclidean", "使用哪一個距離方法 [euclidean, manhattan, cosine]")
+	algorithmArg := flag.String("a", "linear", "使用哪一個演算法 [linear, kdtree]")
+	flag.Parse()
+
+	if *rawDataFile == "" {
+		fmt.Println(`
+			請指定輸入資料! ./golearn -r [filename]
+			輸入 ./golearn -h ，查看更多詳細資訊
+		`)
+		return
+	}
+
 	// 讀取資料
-	rawData, err := base.ParseCSVToInstances("dataset/abalone/data.csv", true)
+	rawData, err := base.ParseCSVToInstances(*rawDataFile, true)
 	if err != nil {
 		panic(err)
 	}
 
 	// 將資料切分成訓練資料與測試資料
-	trainData, testData := base.InstancesTrainTestSplit(rawData, 0.1)
+	trainData, testData := base.InstancesTrainTestSplit(rawData, *percent)
 
 	// 建立一個訓練用的工具，cls即是Model
-	cls := knn.NewKnnClassifier("euclidean", "linear", 1)
+	cls := knn.NewKnnClassifier(*distanceArg, *algorithmArg, *specify)
 
 	// 開始訓練
 	err = cls.Fit(trainData)
@@ -29,7 +46,10 @@ func main() {
 	}
 
 	// 儲存Model
-	cls.Save("abalone.model")
+	err = cls.Save(*outputModelFile)
+	if err != nil {
+		panic(err)
+	}
 
 	log.Println("測試資料 -> ", testData)
 
