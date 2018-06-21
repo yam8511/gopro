@@ -1,0 +1,64 @@
+
+Q0
+SENTENCE 男 小美，妳的電話號碼是幾號？
+SENTENCE 女 上次不是才給你嗎？
+SENTENCE 男 抱歉，我不小心把那張紙給弄丟了。
+SENTENCE 女 把你的手機拿出來吧！記在你的手機裡，這樣才不會再弄丟。
+QUESTION 男 小美為什麼要這位先生把手機拿出來？
+OPTION 她想知道對方有沒有手機 0
+OPTION 她想借對方的手機打電話 0
+OPTION 她不相信對方把手機弄丟了 0
+OPTION 她想把自己的電話號碼給對方 1
+Q46
+SENTENCE 男 最近我的鼻子不太舒服，晚上都睡不好。可以給我一點藥嗎？
+SENTENCE 女 我看看。嗯，還不需要吃藥。多運動會讓你覺得好一點。
+SENTENCE 男 我是不是感冒了？
+SENTENCE 女 不是，春天來的時候，很多人都會有這個問題。
+QUESTION 男 這位先生的鼻子不舒服和什麼有關係？
+OPTION 睡得不好 0
+OPTION 沒有吃藥 0
+OPTION 天氣變了 1
+OPTION 不常運動 0
+Q47
+SENTENCE 男 這裡交通很方便，為什麼想搬家？
+SENTENCE 女 鄰居夜裡經常玩樂器，吵得不得了。
+SENTENCE 男 不能跟他們談一談嗎？
+SENTENCE 女 談過了，也請警察幫忙了，可是一點用也沒有。
+QUESTION 男 這位小姐的意思是什麼？
+OPTION 她沒辦法讓鄰居安靜一些 1
+OPTION 她想搬到交通方便的地方 0
+OPTION 她打算請警察跟鄰居談談 0
+OPTION 她想找喜歡玩樂器的鄰居 0
+Q48
+SENTENCE 男 我決定不上這個課了。
+SENTENCE 女 大明，發生什麼事了嗎？
+SENTENCE 男 我不知道學期報告要怎麼做。
+SENTENCE 女 這個課的報告真的不容易，但我想你可以先找老師討論。
+QUESTION 男 這位小姐的意思是什麼？
+OPTION 她也不想做學期報告 0
+OPTION 她可以和大明一起討論 0
+
+OPTION 大明不需要這麼快做決定 1
+OPTION 大明應該告訴她發生什麼事 0
+Q49
+SENTENCE 男 你的牛仔褲髒了！要放進洗衣機洗嗎？
+SENTENCE 女 那件已經很舊了，我需要一件新褲子。
+SENTENCE 男 要幫妳把舊褲子丟了嗎？
+SENTENCE 女 先洗一洗吧！我後天才能去買新的。
+
+QUESTION 男 這位小姐的意思是什麼？
+OPTION 她買新褲子了 0
+OPTION 她想買新褲子 1
+OPTION 舊褲子可以丟了 0
+OPTION 她把褲子洗好了 0
+Q50
+SENTENCE 男 不好意思，我遲到了。
+SENTENCE 女 是不是工作太忙，所以比較晚下班？
+SENTENCE 男 不是，是我記錯時間了，真抱歉！
+SENTENCE 女 不是因為工作才遲到啊！那你請我喝飲料吧！
+QUESTION 男 這位小姐的意思是什麼？
+OPTION 她想請這位先生喝杯飲料 0
+OPTION 她知道這位先生常常遲到 0
+OPTION 她相信這位先生工作很忙 0
+OPTION 她覺得這位先生應該請客 1
+Q60
