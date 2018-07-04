@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"image/color"
+	"strings"
+	"time"
 
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
@@ -79,7 +81,98 @@ func update(screen *ebiten.Image) error {
 	return nil
 }
 
+var showTxt string
+var f = 1
+var commandMode bool
+
+func display(screen *ebiten.Image) error {
+	txt := ""
+	for i := 0; i < 3; i++ {
+		if ebiten.IsKeyPressed(ebiten.Key(i)) {
+			txt = fmt.Sprint(i)
+		}
+	}
+
+	if f > 0 && commandMode {
+		txt = string(showTxt) + txt + "_"
+	} else {
+		txt = string(showTxt) + txt
+	}
+	f = -f
+
+	ebitenutil.DebugPrint(screen, txt)
+
+	// Ctrl + C
+	if ebiten.IsKeyPressed(ebiten.KeyControl) && ebiten.IsKeyPressed(ebiten.KeyC) {
+		showTxt = ""
+		return errors.New("EXIT")
+	}
+	return nil
+}
+
+func writeToScreen(txt string) {
+	showTxt = ""
+	strLen := len(txt)
+	if strLen == 0 {
+		return
+	}
+
+	cursor := 0
+	duration := time.Second / time.Duration(strLen)
+	// duration := time.Millisecond * 60
+	ticker := time.NewTicker(duration)
+	for range ticker.C {
+		if cursor >= strLen {
+			break
+		}
+		// 如果是Tab，換成2個空格
+		showTxt += strings.Replace(string(txt[cursor]), "	", "  ", -1)
+		cursor++
+	}
+}
+
+func printToScreen(txt string) {
+	showTxt = strings.Replace(txt, "	", "  ", -1)
+}
+
+func appendToScreen(txt string) {
+	showTxt += strings.Replace(txt, "	", "  ", -1)
+}
+
+func createInputList(options map[int]string) {
+	txt := ""
+	for number, option := range options {
+		if number < 0 || number > 9 {
+			continue
+		}
+		txt += fmt.Sprintf("%d. %s\n", number, option)
+	}
+	txt += "> "
+	writeToScreen(txt)
+}
+
 func main() {
-	err := ebiten.Run(update, 320, 240, 2, "Hello world!")
+	go func() {
+		writeToScreen(`
+			Hello World !
+			This is a Window for Show Text.
+		`)
+		time.Sleep(time.Second)
+		printToScreen(`
+			Now. Here we go!
+		`)
+		time.Sleep(time.Second)
+		appendToScreen(`
+			Let's Go!
+		`)
+		time.Sleep(time.Second)
+		createInputList(map[int]string{
+			1: "Print Author",
+			2: "Print Hello",
+			3: "Exit",
+		})
+		commandMode = true
+	}()
+	err := ebiten.Run(display, 320, 240, 2, "Great Block")
 	fmt.Println(err)
 }
