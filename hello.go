@@ -43,16 +43,15 @@ func main() {
 	for {
 		done = delectSignal(done, sig)
 		if done {
-			l.Close()
 			log.Println("WAIT EXIT ...")
-			ticker := time.NewTicker(time.Millisecond)
-			for range ticker.C {
+			for {
 				log.Println("Online -> ", online)
 				if online <= 0 {
 					break
 				}
 				online, done = waitConnection(online, done, sig)
 			}
+			l.Close()
 			log.Println("EXIT")
 			return
 		}
