@@ -1,10 +1,12 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net"
-	"net/http"
+	"net/rpc"
+	"net/rpc/jsonrpc"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,17 +16,28 @@ import (
 var cin = make(chan string)
 var cout = make(chan string)
 
-type server int
+type Arith int
 
-func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	cin <- r.RemoteAddr
-	time.Sleep(time.Second * 10)
-	w.Write([]byte(fmt.Sprintf("You are from %s", r.RemoteAddr)))
-	cout <- r.RemoteAddr
+func (arith *Arith) Sum(a *int, b *int) (err error) {
+	cin <- "a"
+	time.Sleep(time.Second * 5)
+	*b = *a + 1
+	cout <- "b"
+	return
 }
 
 func main() {
 	fmt.Println("Hello World")
+
+	jsonrpcAddress := flag.String("jsonrpc_address", ":8000", "the address for server listening")
+	isClient := flag.Bool("c", false, "if run client")
+	flag.Parse()
+
+	if *isClient {
+		runJSONRPCClient(*jsonrpcAddress)
+		return
+	}
+
 	l, err := net.Listen("tcp", ":8000")
 	if err != nil {
 		log.Fatal(err)
@@ -32,18 +45,30 @@ func main() {
 
 	sig := make(chan os.Signal)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
-
-	go func() {
-		err = http.Serve(l, new(server))
-		log.Println("http err ->", err)
-	}()
-
 	online := 0
 	done := false
+
+	go func() {
+		rpc.RegisterName("Arith", new(Arith))
+		for {
+			conn, err := l.Accept()
+			if err != nil {
+				if done {
+					log.Println("Error: accept jsonrpc connection ->", err)
+					return
+				}
+				continue
+			}
+			log.Println("Accept jsonrpc connection")
+			// 設定連線timeout
+			// conn.SetDeadline(time.Now().Add(time.Second * time.Duration(*timeout)))
+			go jsonrpc.ServeConn(conn)
+		}
+	}()
+
 	for {
 		done = delectSignal(done, sig)
 		if done {
-			l.Close()
 			log.Println("WAIT EXIT ...")
 			ticker := time.NewTicker(time.Millisecond)
 			for range ticker.C {
@@ -53,6 +78,7 @@ func main() {
 				}
 				online, done = waitConnection(online, done, sig)
 			}
+			l.Close()
 			log.Println("EXIT")
 			return
 		}
@@ -100,4 +126,21 @@ func waitConnection(online int, done bool, sig chan os.Signal) (int, bool) {
 		}
 	}
 	return online, done
+}
+
+func runJSONRPCClient(address string) {
+	client, err := jsonrpc.Dial("tcp", address)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	var args interface{}
+	args = 1
+	var sum int
+	err = client.Call("Arith.Sum", args, &sum)
+	if err != nil {
+		log.Fatal("arith error:", err)
+	}
+	fmt.Printf("Arith: req -> %v , res -> %v\n", args, sum)
 }
