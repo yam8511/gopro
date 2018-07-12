@@ -75,6 +75,7 @@ func main() {
 		done = delectSignal(done, sig)
 		if done {
 			log.Println("WAIT EXIT ...")
+			l.Close()
 			for {
 				log.Println("Online -> ", online)
 				if online <= 0 {
@@ -82,7 +83,6 @@ func main() {
 				}
 				online, done = waitConnection(online, done, sig)
 			}
-			l.Close()
 			log.Println("EXIT")
 			return
 		}
