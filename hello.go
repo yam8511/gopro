@@ -16,13 +16,13 @@ import (
 var cin = make(chan string)
 var cout = make(chan string)
 
+// Arith 數學運算
 type Arith int
 
+// Sum 總和
 func (arith *Arith) Sum(a *int, b *int) (err error) {
-	cin <- "a"
-	time.Sleep(time.Second * 5)
+	time.Sleep(time.Second * 10)
 	*b = *a + 1
-	cout <- "b"
 	return
 }
 
@@ -54,15 +54,20 @@ func main() {
 			conn, err := l.Accept()
 			if err != nil {
 				if done {
-					log.Println("Error: accept jsonrpc connection ->", err)
 					return
 				}
+				log.Println("Error: accept jsonrpc connection ->", err)
 				continue
 			}
 			log.Println("Accept jsonrpc connection")
 			// 設定連線timeout
 			// conn.SetDeadline(time.Now().Add(time.Second * time.Duration(*timeout)))
-			go jsonrpc.ServeConn(conn)
+			go func(conn net.Conn) {
+				ip := conn.RemoteAddr().String()
+				cin <- ip
+				jsonrpc.ServeConn(conn)
+				cout <- ip
+			}(conn)
 		}
 	}()
 
@@ -70,8 +75,7 @@ func main() {
 		done = delectSignal(done, sig)
 		if done {
 			log.Println("WAIT EXIT ...")
-			ticker := time.NewTicker(time.Millisecond)
-			for range ticker.C {
+			for {
 				log.Println("Online -> ", online)
 				if online <= 0 {
 					break
