@@ -1,0 +1,21 @@
+workspace:
+  base: /go
+  path: src/demo
+
+pipeline:
+  build:
+    image: golang:${GO_VERSION}
+    commands:
+      - go build
+      - go test
+
+  deploy:
+    image: golang:latest
+    commands:
+      - pwd
+      - ls
+
+matrix:
+  GO_VERSION:
+    - 1.7
+    - 1.6

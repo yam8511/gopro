@@ -1,0 +1,58 @@
+version: '3'
+
+services:
+  gitea:
+    image: gitea/gitea:latest
+    # build: .
+    ports:
+      - "10022:22"
+      - "3000:3000"
+    volumes:
+      - ./data:/data
+    # environment:
+    #   - MACARON_ENV=production
+
+  pgsql:
+    image: postgres:alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=qwe123
+      - POSTGRES_DB=gitea
+
+  adminer:
+    image: adminer
+    ports:
+      - "8080:8080"
+
+  drone-server:
+    image: drone/drone:0.8
+
+    ports:
+      - 8000:8000
+      - 9000:9000
+    volumes:
+      - ./drone:/var/lib/drone/
+    restart: always
+    environment:
+      - DRONE_OPEN=true
+      - DRONE_HOST=http://drone-server:8000
+      - DRONE_GITEA=true
+      - DRONE_GITEA_URL=http://gitea:3000
+      - DRONE_GITEA_GIT_USERNAME=zuolar
+      - DRONE_GITEA_GIT_PASSWORD=qwe123
+      - DRONE_SECRET=drone-ci
+
+  drone-agent:
+    image: drone/agent:0.8
+
+    command: agent
+    restart: always
+    depends_on:
+      - drone-server
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DRONE_SERVER=drone-server:9000
+      - DRONE_SECRET=drone-ci
