@@ -10,7 +10,7 @@ $ heroku login
 
 2. 建立Heroku專案
 ```
-heroku create
+$ heroku create
 Creating app... done, ⬢ young-reef-51042
 https://young-reef-51042.herokuapp.com/ | https://git.heroku.com/young-reef-51042.git
 ```
@@ -38,7 +38,17 @@ $ heroku container:push demo --recursive
 $ heroku container:release web demo
 ```
 
-6. 建置DB (PostgreSQL)
+6. 開啟頁面＆監看紀錄
+```
+$ heroku open
+$ heroku logs -t
+```
+
+---
+
+# 架設DB (PostgreSQL)
+
+1. 架設DB (PostgreSQL)
 ```shell
 $ heroku addons:create heroku-postgresql:hobby-dev
 Creating heroku-postgresql:hobby-dev on ⬢ young-reef-51042... free
@@ -48,6 +58,16 @@ Database has been created and is available
 Created postgresql-angular-16538 as DATABASE_URL
 ```
 
-7. 看DB連線設定
+2. 看DB連線設定
 - https://data.heroku.com/
 - 「Setting」 -> 「View Credentials」
+
+3. 開啟 adminer 看資料庫
+```shell
+docker-compose up -d adminer
+```
+ps. 開啟 http://127.0.0.1:8080
+
+4. 開API，建立使用者資料
+- http://[專案的Domain]/api/create/user
+可以看到回傳的User資料

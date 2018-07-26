@@ -7,6 +7,12 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    environment:
+      - POSTGRES_HOST=pgsql
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=qwe123
+      - POSTGRES_DB=demo
 
   demo:
     build:
@@ -14,3 +20,17 @@ services:
       dockerfile: Dockerfile.demo
     ports:
       - "8001:8000"
+
+  pgsql:
+    image: postgres:alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=qwe123
+      - POSTGRES_DB=demo
+
+  adminer:
+    image: adminer
+    ports:
+      - "8080:8080"

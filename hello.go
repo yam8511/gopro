@@ -24,6 +24,26 @@ func main() {
 		}
 	})
 
+	r.GET("/api/create", func(c *gin.Context) {
+		db, err := newDBConnection()
+		if err != nil {
+			c.JSON(http.StatusOK, "error ---> "+err.Error())
+			return
+		}
+		defer db.Close()
+
+		user := &User{
+			Name: "Zuolar",
+		}
+		err = db.Create(&user).Error
+		if err != nil {
+			c.JSON(http.StatusOK, "error ---> "+err.Error())
+			return
+		}
+
+		c.JSON(http.StatusOK, user)
+	})
+
 	r.GET("/api", func(c *gin.Context) {
 		if site == "web" {
 			data, err := callAPI("demo")
