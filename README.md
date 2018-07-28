@@ -55,3 +55,34 @@ $ docker-compose down
 1. 所有的「服務名稱」皆等同容器的「IP」
 2. 容器內的世界，用容器內服務的「名稱」與「Port」互Call
 3. 容器外的世界，只能Call「對外開的Port」
+
+---
+
+# yaml 欄位說明
+
+```yaml
+# compose 的版本號
+version: '3'
+
+# 定義所有服務的地方
+services:
+
+    # 定義服務
+    [服務名稱]:
+        # 定義服務映像檔
+        image: [映像檔]
+        # 定義執行指令，若沒給，預設執行映像檔指令
+        command: [指令]
+        # 定義 Port 連接
+        ports:
+            - "[本機port]:[容器port]"
+        # 定義工作路徑
+        working_dir: [執行指令的路徑]
+        # 定義檔案掛載
+        volumes:
+            - "[本機檔案或資料]:[容器檔案或資料]"
+        # 定義環境變數
+        environment:
+            - KEY=VALUE
+            - PORT=8000
+```
