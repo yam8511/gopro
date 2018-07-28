@@ -2,24 +2,7 @@ version: '3'
 
 services:
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    environment:
-      - POSTGRES_HOST=pgsql
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=qwe123
-      - POSTGRES_DB=demo
-
-  demo:
-    build:
-      context: .
-      dockerfile: Dockerfile.demo
-    ports:
-      - "8001:8000"
+    image: nginx
 
   pgsql:
     image: postgres:alpine

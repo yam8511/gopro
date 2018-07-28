@@ -1,73 +1,57 @@
-# Heroku Demo
+# Docker-Compose Demo
 
-0. 安裝 Heroku CLI (指令列)
-參考文件 [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli)
-
-1. Heroku 登入
+1. 啟動所有服務
 ```shell
-$ heroku login
+$ docker-compose up -d
+
+# 啟動指定服務
+# docker-compose up -d [服務名稱...]
+# docker-compose up -d web pgsql
 ```
 
-2. 建立Heroku專案
-```
-$ heroku create
-Creating app... done, ⬢ young-reef-51042
-https://young-reef-51042.herokuapp.com/ | https://git.heroku.com/young-reef-51042.git
-```
-
-
-3. 加入專案 git remote
+2. 查看服務狀態
 ```shell
-$ heroku git:remote -a [專案名稱]
-# heroku git:remote -a young-reef-51042
+$ docker-compose ps
+
+# 查看指定服務
+# docker-compose ps [服務名稱...]
+# docker-compose ps web pgsql
 ```
 
-4. 推送專案 (用Dockerfile建置)
+3. 查看服務CPU用量
 ```shell
-$ heroku container:login
+$ docker-compose top
 
-# 預設推送 Dockerfile
-$ heroku container:push web
-
-# 推送 Dockerfile.demo
-$ heroku container:push demo --recursive
+# 查看指定服務
+# docker-compose top [服務名稱...]
+# docker-compose top web pgsql
 ```
 
-5. 發佈專案 (建置好的專案)
+4. 停止/重啟服務
 ```shell
-$ heroku container:release web demo
+# 停止
+$ docker-compose stop [服務名稱...]
+# docker-compose stop web
+
+# 重啟
+$ docker-compose restart [服務名稱...]
+# docker-compose restart web
 ```
 
-6. 開啟頁面＆監看紀錄
+5. 水平擴展服務
+```shell
+docker-compose up -d --scale [服務名稱]=[數量]
+# docker-compose up -d --scale web=3  --scale adminer=2
 ```
-$ heroku open
-$ heroku logs -t
+
+6. 關閉所有服務
+```shell
+$ docker-compose down
 ```
 
 ---
 
-# 架設DB (PostgreSQL)
-
-1. 架設DB (PostgreSQL)
-```shell
-$ heroku addons:create heroku-postgresql:hobby-dev
-Creating heroku-postgresql:hobby-dev on ⬢ young-reef-51042... free
-Database has been created and is available
- ! This database is empty. If upgrading, you can transfer
- ! data from another database with pg:copy
-Created postgresql-angular-16538 as DATABASE_URL
-```
-
-2. 看DB連線設定
-- https://data.heroku.com/
-- 「Setting」 -> 「View Credentials」
-
-3. 開啟 adminer 看資料庫
-```shell
-docker-compose up -d adminer
-```
-ps. 開啟 http://127.0.0.1:8080
-
-4. 開API，建立使用者資料
-- http://[專案的Domain]/api/create/user
-可以看到回傳的User資料
+# 觀念
+1. 所有的「服務名稱」皆等同容器的「IP」
+2. 容器內的世界，用容器內服務的「名稱」與「Port」互Call
+3. 容器外的世界，只能Call「對外開的Port」
