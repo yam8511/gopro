@@ -1,0 +1,125 @@
+definitions:
+  main.Login:
+    properties:
+      password:
+        example: qwe123
+        type: string
+      username:
+        example: zuolar
+        type: string
+    type: object
+  main.User:
+    properties:
+      id:
+        example: 99
+        type: integer
+      password:
+        example: qwe123
+        type: string
+      username:
+        example: zuolar
+        type: string
+    type: object
+info:
+  contact: {}
+  description: 範例API文件工具.
+  license:
+    name: Zuolar
+  termsOfService: http://swagger.io/terms/
+  title: GoPro API
+  version: 0.0.1
+paths:
+  /api/login:
+    post:
+      consumes:
+      - application/json
+      description: 設定cookie
+      parameters:
+      - description: 登入資訊
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/main.Login'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 登入狀況
+          schema:
+            type: string
+      summary: 登入
+      tags:
+      - user
+  /api/logout:
+    delete:
+      consumes:
+      - application/json
+      description: 清除cookie
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 登出狀況
+          schema:
+            type: string
+      summary: 登出
+      tags:
+      - user
+  /api/password:
+    put:
+      consumes:
+      - application/json
+      description: 變更自己的密碼
+      parameters:
+      - description: 密碼資料
+        in: query
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 變更狀態
+          schema:
+            type: string
+        "401":
+          description: 請先登入
+          schema:
+            type: string
+        "500":
+          description: 系統錯誤
+          schema:
+            type: string
+      summary: 變更密碼
+      tags:
+      - user
+  /api/user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 取使用者ID
+      parameters:
+      - description: 使用者ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 使用者資料
+          schema:
+            $ref: '#/definitions/main.User'
+            type: object
+        "401":
+          description: 請先登入
+          schema:
+            type: string
+      summary: 使用者資料
+      tags:
+      - user
+swagger: "2.0"
