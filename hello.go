@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	// [參考網址](https://www.reddit.com/r/golang/comments/96ismt/why_golang_for_loop_is_slower_than_python_for_loop/)
 
 	// 一般字串相加
 	begin := time.Now()
