@@ -40,7 +40,7 @@ services:
       - DRONE_HOST=http://drone-server:8000
       - DRONE_GITEA=true
       - DRONE_GITEA_URL=http://gitea:3000
-      - DRONE_GITEA_GIT_USERNAME=zuolar
+      - DRONE_GITEA_GIT_USERNAME=demo
       - DRONE_GITEA_GIT_PASSWORD=qwe123
       - DRONE_SECRET=drone-ci
 

@@ -71,13 +71,10 @@ Username: demo
 Password: qwe123
 ```
 
-7. 開啟 demo/demo 的開關 (右側的小圈圈)
-然後檢查是否有新連結
+7. 在 drone 頁面，開啟 demo/demo 的開關 (右側的小圈圈)
+ps. 檢查 Gitea Webhook 是否有新連結
 - http://127.0.0.1:3000/demo/demo/settings/hooks
-```
-長的像以下連結:
-http://drone-server:8000/hook?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXh0IjoiZGVtby9kZW1vIiwidHlwZSI6Imhvb2sifQ.6XUn777aRCUOPYU5XMl2Bo2pVsfpSYFsp4iRmVUXNDI
-```
+
 
 8. 進入 demo 資料夾，上傳 git
 ```
