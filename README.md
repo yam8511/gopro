@@ -1,5 +1,10 @@
 # Drone + Gitea
 
+0. 前言
+此範例是在自己的本機架設Git伺服器(Gitea)，再架設Drone連上自己的Git伺服器。
+若不想在自己本機架設Git伺服器，可跳過Git伺服器架設的步驟。(直接跳到步驟5)
+但須注意，必須讓外部Git伺服器**有辦法連線**到自己的Drone伺服器
+
 1. 先設定一下 hosts
 ```
 $ sudo vi /etc/hosts
