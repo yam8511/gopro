@@ -28,7 +28,6 @@ services:
 
   drone-server:
     image: drone/drone:0.8
-
     ports:
       - 8000:8000
       - 9000:9000
@@ -49,7 +48,6 @@ services:
 
   drone-agent:
     image: drone/agent:0.8
-
     command: agent
     restart: always
     depends_on:

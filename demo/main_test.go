@@ -1,6 +1,8 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestGetDemo(t *testing.T) {
 	if GetDemo() != "demo" {

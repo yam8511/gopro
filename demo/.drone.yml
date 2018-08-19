@@ -3,19 +3,64 @@ workspace:
   path: src/demo
 
 pipeline:
+  # 編譯並測試
   build:
     image: golang:${GO_VERSION}
     commands:
       - go build
       - go test
 
-  deploy:
-    image: golang:latest
-    commands:
-      - pwd
-      - ls
+  # 發佈映像檔到 docker hub
+  # 詳細說明請參照 http://plugins.drone.io/drone-plugins/drone-docker/
+  publish:
+    image: plugins/docker
+    # 必須指定要使用哪個secrets，會自動映射到環境變數
+    # 請自行到 Drone 的頁面上，加入 Secret 的變數
+    # 若不想設定 Secret，可註解第20行，打開下面兩行，並改成自己的資料 (21,22,23)
+    secrets: [ docker_username, docker_password, plugin_repo ]
+    # username: [docker hub username]
+    # password: [docker hub password]
+    # repo: [docker hub repo]
+    auto_tag: true
+    auto_tag_suffix: alpine
+
+  # 部署 [待補]
+  # deploy:
+  #   image: quay.io/honestbee/drone-kubernetes
+  #   kubernetes_server: https://kubernetes.company.org
+  #   kubernetes_token: CXHVLJSDKJFS...
+  #   namespace: app
+  #   deployment: my-deployment
+  #   repo: myorg/myrepo
+  #   container: my-container
+  #   tag: mytag
+
+  # 通知發佈成功與否
+  notify:
+    image: appleboy/drone-telegram
+    # 必須指定要使用哪個secrets，會自動映射到環境變數
+    # 請自行到 Drone 的頁面上，加入 Secret 的變數
+    secrets: [ plugin_token, plugin_to ]
+    # 若不想設定 Secret，可註解第39行，打開下面兩行，並改成自己的資料 (41,42)
+    # token: [TELEGRAM_BOT_TOKEN]
+    # to: [USER_ID or GROUP_ID]
+    format: markdown
+    # 請參照說明：http://plugins.drone.io/appleboy/drone-telegram/
+    message: >
+      No. {{build.number}};
+      專案『{{repo.name}}』; 分支『[{{commit.branch}}]({{commit.link}})』
+      提交訊息：{{commit.message}}
+      {{#success build.status}}
+      編譯測試正常，已發佈
+      {{else}}
+      編譯測試失敗，請修正
+      {{/success}}
+      ; {{build.link}}
+    # 有 when 的話，即使上面失敗了，也會執行這個步驟
+    when:
+      status: [ success, failure ]
 
 matrix:
   GO_VERSION:
-    - 1.7
-    - 1.6
+    - latest
+    # - 1.9
