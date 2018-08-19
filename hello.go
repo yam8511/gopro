@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -17,11 +18,22 @@ func main() {
 	}
 
 	b, err := tb.NewBot(settings)
-
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
+
+	b.Handle("/myid", func(m *tb.Message) {
+		b.Send(m.Sender, "Your ID is "+fmt.Sprint(m.Sender.ID))
+	})
+
+	b.Handle("/hello", func(m *tb.Message) {
+		b.Send(m.Sender, "Hello~ "+m.Sender.Username)
+	})
+
+	b.Handle("/cmd", func(m *tb.Message) {
+		b.Send(m.Sender, "You enter "+m.Payload)
+	})
 
 	b.Handle(tb.OnText, func(m *tb.Message) {
 		b.Send(m.Sender, m.Text+" , 接收訊息 By "+m.Sender.Username)
@@ -29,7 +41,6 @@ func main() {
 
 	b.Handle(tb.OnPhoto, func(m *tb.Message) {
 		log.Printf("檔案資訊\n%+#v\n", m.Photo)
-		log.Printf("檔案資訊\n%+#v\n", m.Photo.MediaFile())
 		log.Printf("雲端？%+#v\n, 本地？%+#v", m.Photo.InCloud(), m.Photo.OnDisk())
 		log.Printf("文字%s\n", m.Caption)
 		// b.Send(m.Sender, m.Photo.FilePath+" , 接收檔案 By "+m.Sender.Username)
@@ -44,59 +55,31 @@ func main() {
 		b.Send(m.Sender, m.Document)
 	})
 
-	b.Handle("/hello", func(m *tb.Message) {
-		b.Send(m.Sender, "Hello~ "+m.Sender.Username)
-	})
-
-	b.Handle("/cmd", func(m *tb.Message) {
-		b.Send(m.Sender, "你輸入了 "+m.Payload)
-	})
-
-	// This button will be displayed in user's
-	// reply keyboard.
+	// 以下設定額外的按鈕鍵盤
 	replyBtn := tb.ReplyButton{Text: "🌕 Button #1"}
 	replyBtn2 := tb.ReplyButton{Text: "🌕 Button #2"}
 	replyBtn3 := tb.ReplyButton{Text: "🌕 Button #Contact", Contact: true}
 	replyBtn4 := tb.ReplyButton{Text: "🌕 Button #Location", Location: true}
-	replyBtn5 := tb.ReplyButton{Text: "🌕 Button #5", Action: func(cb *tb.Callback) {
-		log.Printf("BTN5 ---> %+v\n", cb)
-	}}
+	replyBtn5 := tb.ReplyButton{Text: "🌕 Button #5"}
 	replyKeys := [][]tb.ReplyButton{
 		[]tb.ReplyButton{replyBtn, replyBtn2},
 		[]tb.ReplyButton{replyBtn3, replyBtn4, replyBtn5},
 		// ...
 	}
 
+	// 設定按鈕相對應的動作
 	replyCB := func(m *tb.Message) {
 		// on reply button pressed
 		log.Println("reply key press -->", m.Text)
 	}
 
-	replyLocation := func(m *tb.Message) {
-		// on reply button pressed
-		// log.Println("reply key press -->", m.Text)
-		// log.Printf("Location: %+v\n\n, Contact : %+v\n\n", m.Location, m.Contact)
-		log.Printf("Location: %+v\n\n", m)
-	}
-
-	replyContact := func(m *tb.Message) {
-		// on reply button pressed
-		// log.Println("reply key press -->", m.Text)
-		// log.Printf("Location: %+v\n\n, Contact : %+v\n\n", m.Location, m.Contact)
-		log.Printf("Contact: %+v\n\n", m)
-	}
 	b.Handle(&replyBtn, replyCB)
 	b.Handle(&replyBtn2, replyCB)
-	b.Handle(&replyBtn3, replyContact)
-	b.Handle(&replyBtn4, replyLocation)
+	b.Handle(&replyBtn3, replyCB)
+	b.Handle(&replyBtn4, replyCB)
 	b.Handle(&replyBtn5, replyCB)
 
-	// And this one — just under the message itself.
-	// Pressing it will cause the client to send
-	// the bot a callback.
-	//
-	// Make sure Unique stays unique as it has to be
-	// for callback routing to work.
+	// 設定文字底下顯示的按鈕
 	inlineBtn := tb.InlineButton{
 		Unique:      "sad_moon",
 		Text:        "🌚 Button #2",
@@ -132,9 +115,6 @@ func main() {
 		if !m.Private() {
 			return
 		}
-
-		log.Println(replyKeys)
-
 		log.Println("回傳鍵盤")
 		b.Send(m.Sender, "Hello!", &tb.ReplyMarkup{
 			ReplyKeyboard:  replyKeys,
@@ -145,7 +125,6 @@ func main() {
 	b.Handle("/cancel", func(m *tb.Message) {
 		b.Send(m.Sender, "Reset", &tb.ReplyMarkup{
 			ReplyKeyboardRemove: true,
-			// InlineKeyboard: inlineKeys,
 		})
 	})
 
