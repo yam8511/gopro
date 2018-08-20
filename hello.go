@@ -36,6 +36,12 @@ func isZuolarError(err error) bool {
 	return ok
 }
 
+// 檢查是否為數字 ---> 這邊要對照 isZuolarError 的func，因為作法是一樣的
+func isNumber(what interface{}) bool {
+	_, ok := what.(int)
+	return ok
+}
+
 func main() {
 	fmt.Println("Hello World")
 
@@ -46,7 +52,6 @@ func main() {
 	// 但是可以用 .(型態) 進行型態轉型
 	// 會回傳兩個值，第一個是轉型後的資料，第二個是用來判斷是否轉型成功
 	stringVar, convertOK := anyData.(string) // 先轉成字串
-
 	// 如果轉型成功，顯示出來
 	if convertOK {
 		fmt.Println("字串轉型成功 --->", stringVar)
@@ -62,6 +67,10 @@ func main() {
 	} else {
 		fmt.Println("數字轉型失敗 --->", anyData)
 	}
+	fmt.Println("==========================")
+
+	// 呼叫func來檢查
+	fmt.Printf("anyData的變數值是不是數字？ %v\n", isNumber(anyData))
 	fmt.Println("==========================")
 
 	// golang原生基本的error
