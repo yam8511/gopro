@@ -23,6 +23,9 @@ type ErrorDetail struct {
 
 func main() {
 	fmt.Println("Hello World")
+	// var i interface{}
+	// fmt.Printf("%+v\n", reflect.ValueOf(i).IsValid())
+	// return
 
 	check(struct {
 		Error  *ErrorDetail `json:"error"`
@@ -32,7 +35,11 @@ func main() {
 			Data      int
 		} `json:"result"`
 	}{
-		Error: nil,
+		Error: &ErrorDetail{
+			Code:    500,
+			Message: "123",
+			Data:    "OKOKK",
+		},
 		Result: struct {
 			ErrorCode string `json:"error_code"`
 			ErrorText string `json:"error_text"`
@@ -64,39 +71,62 @@ func check(res interface{}) {
 		field := resStruct.Field(i)
 		fmt.Printf("Tag %d ---> %+v\n", i, field.Tag.Get("json"))
 
+		val := resValue.FieldByName(field.Name)
+		v := val.Interface()
+		fmt.Printf("Value %s ＝＝＝> %v %T\n", field.Name, v, v)
+		if reflect.ValueOf(v).IsValid() {
+			fmt.Printf("Value %s ＝＝＝> valid: %v\n", field.Name, reflect.ValueOf(v).IsValid())
+			if reflect.ValueOf(v).Kind() == reflect.Ptr {
+				fmt.Printf("Value %s ＝＝＝> nil: %v\n\n", field.Name, reflect.ValueOf(v).IsNil())
+				if reflect.ValueOf(v).IsNil() {
+					continue
+				}
+			}
+		} else {
+			fmt.Printf("Value %s ＝＝＝> valid: %v\n", field.Name, reflect.ValueOf(v).IsValid())
+			continue
+		}
+
 		switch field.Tag.Get("json") {
 		case "error":
+			sv, ok := v.(*ErrorDetail)
+			if ok {
+				shouldResponse.Error = sv
+			}
 		case "result":
 			// 用欄位名稱取值
-			val := resValue.FieldByName(field.Name)
-			fmt.Printf("Value %s ＝＝＝> %v %T\n\n", field.Name, val.Interface(), val.Interface())
-			if fmt.Sprintf("%+v", val.Interface()) != "<nil>" {
-				subStruct := reflect.TypeOf(val.Interface())
-				subValue := reflect.ValueOf(val.Interface())
+			if fmt.Sprintf("%+v", v) != "<nil>" {
+				subStruct := reflect.TypeOf(v)
+				subValue := reflect.ValueOf(v)
 				subNum := subStruct.NumField()
 				for j := 0; j < subNum; j++ {
 					subField := subStruct.Field(j)
 					switch subField.Tag.Get("json") {
 					case "error_code":
-						v := subValue.Interface()
-						errCode, ok := v.(string)
+						sf := subValue.FieldByName(subField.Name)
+						sv := sf.Interface()
+						errCode, ok := sv.(string)
+						fmt.Println("ErrorCode --->", sv)
 						if ok {
 							shouldResponse.Result.ErrorCode = errCode
 						}
 					case "error_text":
-						v := subValue.Interface()
-						errText, ok := v.(string)
+						sf := subValue.FieldByName(subField.Name)
+						sv := sf.Interface()
+						errText, ok := sv.(string)
+						fmt.Println("ErrorText --->", sv)
 						if ok {
 							shouldResponse.Result.ErrorText = errText
 						}
 					}
 				}
 				fmt.Println(subStruct, subValue, subNum)
-			} else {
-				fmt.Println("IS NUILL")
 			}
 		}
 	}
 
 	fmt.Printf("\n\nResponse ---> %+v\n", shouldResponse)
+	if shouldResponse.Error != nil {
+		fmt.Println("Response ---> ", shouldResponse.Error.Code, shouldResponse.Error.Message, shouldResponse.Error.Data)
+	}
 }
