@@ -8,9 +8,23 @@ import (
 	"strings"
 )
 
+/**
+ * ============
+ *     心得
+ * ============
+ * net.IP 有 To4() 與 To16()
+ * To4() 可以取得 IPv4 的格式
+ * To16() 可以取得 IPv6 的格式
+ *
+ * 然而使用 To16()，而非 To4()去判斷有沒有效
+ * 是因為 IPv4 可用 To16() 顯示，但 IPv6 無法用 To4()顯示
+ * 所以選擇 To16() 可涵蓋所有IP
+ *
+ */
+
 func main() {
 	// ip := "192.168.1.*"
-	ip := "FE80::0202:B3FF:FE1E:*"
+	ip := "FE80::0202:B3FF:FE1E:0001/00FF"
 	ips := parseIP(ip)
 	for _, ip := range ips {
 		checkIPInfo(ip)
@@ -19,6 +33,18 @@ func main() {
 	checkIPInfo("FE80::0202:B3FF:FE1E:8329")
 	checkIPInfo("192.168.i.2")
 	checkIPInfo("FE80:0202:B3FF:FE1E:8329")
+}
+
+func checkIPInfo(address string) {
+	// 解析IP
+	ip := net.ParseIP(address)
+	// 檢查IP是否有效
+	if ip.To16() == nil {
+		fmt.Println(address, "is not a valid IP address")
+	} else {
+		fmt.Println(address, "to IPv4  --->", ip.To4())
+		fmt.Println(address, "to IPv16 --->", ip.To16())
+	}
 }
 
 func parseIP(ip string) (ips []string) {
@@ -91,7 +117,7 @@ func parseIP(ip string) (ips []string) {
 					if i != 5 {
 						return
 					}
-					for c := 0x0000; c < 0xFFFF; c += 0x0001 {
+					for c := 0x0000; c <= 0xFFFF; c += 0x0001 {
 						elem := fmt.Sprintf("%X", c)
 						if c < len(ipElem) {
 							ipElem[c] = append(ipElem[c], elem)
@@ -126,8 +152,8 @@ func parseIP(ip string) (ips []string) {
 					}
 
 					c := []byte(string(startIndex))
-					target := ByteAdd(endIndex, 0x0001)
-					for !ByteEqual(c, target) {
+					ByteAdd(endIndex, 0x0001)
+					for !ByteEqual(c, endIndex) {
 						elem := fmt.Sprintf("%X", c)
 						if ByteEqual(c, startIndex) {
 							ipElem[0] = append(ipElem[0], elem)
@@ -142,8 +168,7 @@ func parseIP(ip string) (ips []string) {
 							}
 							ipElem = append(ipElem, tmp)
 						}
-						fmt.Printf("%X\n", c)
-						ByteAdd(c, 0x01)
+						ByteAdd(c, 0x0001)
 					}
 
 				default:
@@ -164,32 +189,6 @@ func parseIP(ip string) (ips []string) {
 		ips = append(ips, strings.Join(elem, sep))
 	}
 	return
-}
-
-func checkIPInfo(address string) {
-	// 解析IP
-	ip := net.ParseIP(address)
-	// 檢查IP是否有效
-	if ip.To16() == nil {
-		fmt.Println(address, "is not a valid IP address")
-	} else {
-		fmt.Println(address, "to IPv4  --->", ip.To4())
-		fmt.Println(address, "to IPv16 --->", ip.To16())
-	}
-
-	/**
-	 * ============
-	 *     心得
-	 * ============
-	 * net.IP 有 To4() 與 To16()
-	 * To4() 可以取得 IPv4 的格式
-	 * To16() 可以取得 IPv6 的格式
-	 *
-	 * 然而使用 To16()，而非 To4()去判斷有沒有效
-	 * 是因為 IPv4 可用 To16() 顯示，但 IPv6 無法用 To4()顯示
-	 * 所以選擇 To16() 可涵蓋所有IP
-	 *
-	 */
 }
 
 // ByteEqual 檢查兩個[]byte是否相等
@@ -213,10 +212,10 @@ func ByteEqual(a, b []byte) bool {
 }
 
 // ByteAdd []Byte加數字
-func ByteAdd(c []byte, add byte) []byte {
+func ByteAdd(c []byte, add byte) {
 	if c == nil {
 		c = []byte{0}
-		return c
+		return
 	}
 	index := len(c) - 1
 	c[index] += add
@@ -228,5 +227,5 @@ func ByteAdd(c []byte, add byte) []byte {
 			c[index-1]++
 		}
 	}
-	return c
+	return
 }
