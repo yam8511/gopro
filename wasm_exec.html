@@ -1,0 +1,65 @@
+<!doctype html>
+<!--
+Copyright 2018 The Go Authors. All rights reserved.
+Use of this source code is governed by a BSD-style
+license that can be found in the LICENSE file.
+-->
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>Go wasm</title>
+</head>
+
+<body>
+	<script src="wasm_exec.js"></script>
+	<script>
+		if (!WebAssembly.instantiateStreaming) { // polyfill
+			WebAssembly.instantiateStreaming = async (resp, importObject) => {
+				const source = await (await resp).arrayBuffer();
+				return await WebAssembly.instantiate(source, importObject);
+			};
+		}
+
+		const go = new Go();
+		let mod, inst;
+		WebAssembly.instantiateStreaming(fetch("test.wasm"), go.importObject).then(async (result) => {
+			mod = result.module;
+			inst = result.instance;
+			await go.run(inst);
+			// document.getElementById("runButton").disabled = false;
+			// document.getElementById("addButton").disabled = false;
+			// document.getElementById("subButton").disabled = false;
+		});
+
+		// async function run() {
+		// 	console.clear();
+		// 	inst = await WebAssembly.instantiate(mod, go.importObject); // reset instance
+		// }
+
+		function CallGo(params) {
+			switch (params) {
+				case "Add":
+					Add(1,2)
+					break;
+				case "Substract":
+					Substract(1,2)
+					break;
+			}
+		}
+
+	</script>
+
+	<input type="text" id="value1" />
+	<input type="text" id="value2" />
+
+	<!-- <button onClick="run();" id="runButton" disabled>Run</button> -->
+	<!-- <button onClick="CallGo('Add');" id="addButton">Add</button>
+	<button onClick="CallGo('Substract');" id="subButton">Substract</button> -->
+	<button onClick="Add('value1', 'value2', 'result');" id="addButton">Add</button>
+	<button onClick="Substract('value1', 'value2', 'result');" id="subButton">Substract</button>
+
+	<input type="text" id="result" />
+</body>
+
+</html>
