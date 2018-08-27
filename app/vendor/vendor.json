@@ -1,0 +1,73 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "QeKwBtN2df+j+4stw3bQJ6yO4EY=",
+			"path": "github.com/gin-contrib/sse",
+			"revision": "22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae",
+			"revisionTime": "2017-01-09T09:34:21Z"
+		},
+		{
+			"checksumSHA1": "zVFWiopNQPrDC1TUzKymgTKb0qU=",
+			"path": "github.com/gin-gonic/gin",
+			"revision": "631cfbd1ef2374f5a01f5d17ed8c8f08779ad6fe",
+			"revisionTime": "2018-08-05T05:29:26Z"
+		},
+		{
+			"checksumSHA1": "BjShmaQTKI8+411rCb7LFqJkLA0=",
+			"path": "github.com/gin-gonic/gin/binding",
+			"revision": "631cfbd1ef2374f5a01f5d17ed8c8f08779ad6fe",
+			"revisionTime": "2018-08-05T05:29:26Z"
+		},
+		{
+			"checksumSHA1": "woO1qIxIeQ1bcbPSiMfAKk3r4xg=",
+			"path": "github.com/gin-gonic/gin/json",
+			"revision": "631cfbd1ef2374f5a01f5d17ed8c8f08779ad6fe",
+			"revisionTime": "2018-08-05T05:29:26Z"
+		},
+		{
+			"checksumSHA1": "UofNu0l/AwtCBsjPzhtHBBwGv8Q=",
+			"path": "github.com/gin-gonic/gin/render",
+			"revision": "631cfbd1ef2374f5a01f5d17ed8c8f08779ad6fe",
+			"revisionTime": "2018-08-05T05:29:26Z"
+		},
+		{
+			"checksumSHA1": "uuLcVQXUw0CNt8Y5tsmzLWGlixI=",
+			"path": "github.com/golang/protobuf/proto",
+			"revision": "89a0c16f4dc2a70c0ed864d8ef64878f24fdaa51",
+			"revisionTime": "2018-08-04T22:03:15Z"
+		},
+		{
+			"checksumSHA1": "w5RcOnfv5YDr3j2bd1YydkPiZx4=",
+			"path": "github.com/mattn/go-isatty",
+			"revision": "6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c",
+			"revisionTime": "2017-11-07T05:05:31Z"
+		},
+		{
+			"checksumSHA1": "YtT3fsUdf/GGkeox3GGPgfl+0x8=",
+			"path": "github.com/ugorji/go/codec",
+			"revision": "0e8ffdb13c81bdb48fa80a963cf83f10a0f5a496",
+			"revisionTime": "2018-07-27T09:20:40Z"
+		},
+		{
+			"checksumSHA1": "hJhWnWlJPH69GG7pNZjqm8Lt664=",
+			"path": "golang.org/x/sys/unix",
+			"revision": "1b2967e3c290b7c545b3db0deeda16e9be4f98a2",
+			"revisionTime": "2018-07-06T09:56:39Z"
+		},
+		{
+			"checksumSHA1": "P/k5ZGf0lEBgpKgkwy++F7K1PSg=",
+			"path": "gopkg.in/go-playground/validator.v8",
+			"revision": "5f1438d3fca68893a817e4a66806cea46a9e4ebf",
+			"revisionTime": "2017-07-30T05:02:35Z"
+		},
+		{
+			"checksumSHA1": "ZSWoOPUNRr5+3dhkLK3C4cZAQPk=",
+			"path": "gopkg.in/yaml.v2",
+			"revision": "5420a8b6744d3b0345ab293f6fcba19c978f1183",
+			"revisionTime": "2018-03-28T19:50:20Z"
+		}
+	],
+	"rootPath": "gopro/app"
+}

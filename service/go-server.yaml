@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: go-server-loadbalancer
+spec:
+  selector:
+    repo: gopro
+    app: go-server
+  clusterIP: ""
+  type: LoadBalancer
+  ports:
+  - name: api
+    port: 8000
+    targetPort: 8000

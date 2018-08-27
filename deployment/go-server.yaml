@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-server-deployment
+  labels:
+    site: api
+    lang: golang
+spec:
+  selector:
+    matchLabels:
+      repo: gopro
+      app: go-server
+  # replicas: 水平擴展初始數量
+  replicas: 2
+  # template: Pod的樣板
+  template:
+    # metadata＊: 物件基本資訊
+    metadata:
+      # name＊: 物件名稱 (Unique)
+      name: go-server
+      # namespace: 物件所在的命名空間
+      namespace: default
+      # labels: 物件的標籤，與 Service 的 Selector 搭配使用 
+      labels:
+        repo: gopro
+        app: go-server
+      # annotations: 物件的註解說明
+      annotations:
+        created-at: 2018-08-28
+        container: kubernetes
+
+    # spec＊: 物件的屬性設定
+    spec:
+      # containers＊:
+      containers:
+          # name＊: 容器名稱
+        - name: go-server
+          # image＊: 容器的映像檔
+          image: gopro-app:latest
+          # imagePullPolicy: 映像檔Pull的規則
+          imagePullPolicy: IfNotPresent
+          # ports: 容器的Port
+          ports:
+            - containerPort: 8000
+          # env: 容器的環境變數
+          env:
+              # name: 環境變數的名稱
+            - name: PORT
+              # value: 環境變數的值
+              value: "8000"
+            - name: GIN_MODE
+              value: debug
+          # resources: 容器資源的設定
+          resources:
+            # requests: 容器資源的最小需求
+            requests:
+              # memory: 容器資源的最小記憶體需求
+              memory: "64Mi"
+              # cpu: 容器資源的最小CPU需求
+              cpu: "250m"
+            # limits: 容器資源的最大限制
+            limits:
+              # memory: 容器資源的最大記憶體限制
+              memory: "128Mi"
+              # cpu: 容器資源的最大CPU限制
+              cpu: "500m"
+      # nodeSelector: Node選擇器
+      nodeSelector:
+        app: test
