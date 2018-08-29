@@ -6,6 +6,7 @@
 
 golang 內建套件管理工具，當進行程式編譯時，會自動下載所需套件。
 即使專案位置是在 GOPATH 之外，也是個可以自動下載所需套件的工具。
+ps. **但是在 GOPATH 底下是無法使用的！**
 
 ## 環境變數： GO111MODULE
 
@@ -36,7 +37,10 @@ ps. 若非在GOPATH底下，無法使用 go mod init，但仍可自己手動建�
 - vendor
 
 在專案目錄底下，根據 go.mod 產生出 vendor 的資料夾
-以便之後若使用其他套件管理工具，也仍可使用
+以便之後若使用其他套件管理工具，也仍可使用。
+ps. 會自動執行 go mod why 的功能
+ps. 若要編譯，須打 go build -mod vendor，若沒打則會忽略 vendor
+ps. 若有使用 go mod 產生 vendor，而且專案又放在GOPATH底下，請務必確認「module名稱」與「資料夾名稱」相同
 
 - why
 
