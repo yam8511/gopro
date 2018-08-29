@@ -23,43 +23,20 @@ license that can be found in the LICENSE file.
 
 		const go = new Go();
 		let mod, inst;
-		WebAssembly.instantiateStreaming(fetch("test.wasm"), go.importObject).then(async (result) => {
+		WebAssembly.instantiateStreaming(fetch("test.wasm"), go.importObject).then((result) => {
 			mod = result.module;
 			inst = result.instance;
-			await go.run(inst);
-			// document.getElementById("runButton").disabled = false;
-			// document.getElementById("addButton").disabled = false;
-			// document.getElementById("subButton").disabled = false;
+			document.getElementById("runButton").disabled = false;
 		});
 
-		// async function run() {
-		// 	console.clear();
-		// 	inst = await WebAssembly.instantiate(mod, go.importObject); // reset instance
-		// }
-
-		function CallGo(params) {
-			switch (params) {
-				case "Add":
-					Add(1,2)
-					break;
-				case "Substract":
-					Substract(1,2)
-					break;
-			}
+		async function run() {
+			console.clear();
+			await go.run(inst);
+			inst = await WebAssembly.instantiate(mod, go.importObject); // reset instance
 		}
-
 	</script>
 
-	<input type="text" id="value1" />
-	<input type="text" id="value2" />
-
-	<!-- <button onClick="run();" id="runButton" disabled>Run</button> -->
-	<!-- <button onClick="CallGo('Add');" id="addButton">Add</button>
-	<button onClick="CallGo('Substract');" id="subButton">Substract</button> -->
-	<button onClick="Add('value1', 'value2', 'result');" id="addButton">Add</button>
-	<button onClick="Substract('value1', 'value2', 'result');" id="subButton">Substract</button>
-
-	<input type="text" id="result" />
+	<button onClick="run();" id="runButton" disabled>Run</button>
 </body>
 
 </html>
