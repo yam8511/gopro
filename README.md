@@ -62,12 +62,14 @@ Created postgresql-angular-16538 as DATABASE_URL
 - https://data.heroku.com/
 - 「Setting」 -> 「View Credentials」
 
-3. 開啟 adminer 看資料庫
+3. 設定 Dockerfile 裡面的 POSTGRES 環境變數
+
+4. 開啟 adminer 看資料庫
 ```shell
 docker-compose up -d adminer
 ```
 ps. 開啟 http://127.0.0.1:8080
 
-4. 開API，建立使用者資料
+5. 開API，建立使用者資料
 - http://[專案的Domain]/api/create/user
 可以看到回傳的User資料
