@@ -59,5 +59,12 @@ func main() {
 		fmt.Println("Parse Query Error --->", err)
 		return
 	}
-	fmt.Println("Parse Query", d)
+	fmt.Println("Parse Query --->", d)
+
+	u, err := url.Parse("https://127.0.0.1/api/init?golang=docker&golang=k8s&name=zuolar")
+	if err != nil {
+		fmt.Println("Parse URL Error --->", err)
+		return
+	}
+	fmt.Println("Parse URL --->", u.Scheme, u.Hostname(), u.EscapedPath(), u.Query())
 }
