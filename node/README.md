@@ -1,5 +1,11 @@
 # Node 操作
 
+- 允許k8s主機也加入工作機群
+
+kubectl taint node --all
+
+p.s. 只建議在本機使用，產品上勿用
+
 - 顯示Node (順便顯示標籤)
 
 kubectl get nodes --show-labels
