@@ -1,0 +1,20 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: gopro-proxy-domain
+spec:
+  rules:
+  - host: my-server1
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: go-server-loadbalancer
+          servicePort: 8000
+  - host: my-server2
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: go-server-loadbalancer2
+          servicePort: 8001

@@ -16,7 +16,7 @@ func main() {
 }
 
 func curl() {
-	url := "http://10.106.95.97:8000/"
+	url := "http://10.96.75.237:8000/"
 
 	payload := strings.NewReader("{\n\t\"method\":\"arith.Sum\",\n\t\"params\":{\n\t\t\"A\":0,\n\t\t\"B\":0\n\t}\n}")
 
