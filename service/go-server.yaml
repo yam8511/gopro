@@ -1,14 +1,29 @@
-kind: Service
+# apiVersion＊: API 版本
 apiVersion: v1
+
+# kind＊: yaml 類型
+kind: Service
+
+# metadata＊: 物件基本資訊
 metadata:
+  # name＊: 物件名稱 (Unique)
   name: go-server-loadbalancer
+
+# spec＊: 物件的屬性設定
 spec:
+  # selector＊: 用來選擇Pod，會替Pod建立Endpoint，進行連線轉導
   selector:
     repo: gopro
     app: go-server
-  clusterIP: ""
+  # type＊: 選擇Service的型態，可當Load Balancer或是Proxy
   type: LoadBalancer
+  # clusterIP: 可指定連線IP，若不給則給空字串
+  clusterIP: ""
+  # ports＊: 可指定容器要轉導的Port
   ports:
+    # name＊: Port名稱 (Unique) 
   - name: api
+    # port＊: 釋出到容器外的Port 
     port: 8000
+    # targetPort: 轉接到容器內的Port 
     targetPort: 8000
