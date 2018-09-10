@@ -2,9 +2,16 @@ version: '2'
 
 services:
   web:
-    image: httpd:2.2.32
+    image: golang:1.11-alpine
     ports:
-      - "80:80"
+      - "80:8080"
+    command: go run hello.go
+    working_dir: /app
+    volumes:
+      - .:/app
+      - $GOPATH:/go
+    environment:
+      - GIN_MODE=debug
     depends_on:
       - fluentd
     logging:
