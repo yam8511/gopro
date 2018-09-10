@@ -1,0 +1,16 @@
+syntax = "proto3";
+package testdata;
+
+message Ping {
+    string Content = 1;
+}
+
+message Pong {
+    string Content = 2;
+}
+
+message Enter {
+    string a = 1;
+    string p = 2;
+    int64 g = 3;
+}
