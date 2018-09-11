@@ -347,7 +347,7 @@ func (c *Connector) processMessage(msg *message.Message) {
 }
 
 func serialize(v proto.Message) ([]byte, error) {
-	data, err := proto.Marshal(v)
+	data, err := json.Marshal(v)
 	if err != nil {
 		return nil, err
 	}
