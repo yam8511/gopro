@@ -1,0 +1,76 @@
+<!doctype html>
+<!--
+Copyright 2018 The Go Authors. All rights reserved.
+Use of this source code is governed by a BSD-style
+license that can be found in the LICENSE file.
+-->
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>Go wasm</title>
+</head>
+
+<body>
+	<!-- 載入可執行 wasm 的腳本 -->
+	<script src="wasm_exec.js"></script>
+	<script>
+		// if (!WebAssembly.instantiateStreaming) { // polyfill
+		// 	WebAssembly.instantiateStreaming = async (resp, importObject) => {
+		// 		const source = await (await resp).arrayBuffer();
+		// 		return await WebAssembly.instantiate(source, importObject);
+		// 	};
+		// }
+
+		const go = new Go();
+		let mod, inst;
+		// 載入與編譯 test.wasm 腳本
+		WebAssembly.instantiateStreaming(fetch("test.wasm"), go.importObject).then((result) => {
+			mod = result.module;
+			inst = result.instance;
+			document.getElementById("runButton").disabled = false;
+		});
+
+		async function run() {
+			console.clear();
+			document.getElementById("runButton").disabled = true;
+			console.log("Running")
+			await go.run(inst);
+			console.log("Run Finish")
+			inst = await WebAssembly.instantiate(mod, go.importObject);
+			console.log("Reset")
+			document.getElementById("runButton").disabled = false;
+		}
+
+		async function add() {
+			Add('A', 'B', 'out')
+		}
+
+		async function sub() {
+			i1 = document.getElementById('A').value
+			i2 = document.getElementById('B').value
+			i1 = parseInt(i1)
+			i2 = parseInt(i2)
+			Substract(i1, i2, function(data) {
+				console.log('output', data)
+				document.getElementById('out').innerText = data
+			})
+		}
+
+		async function runGo() {
+			GoCall('Add', 'A', 'B', 'out')
+		}
+	</script>
+
+	<button onClick="run();" id="runButton" disabled>Start WebAssembly</button>
+	<hr />
+
+	<p>A: <input id="A" type="number" /></p>
+	<p>B: <input id="B" type="number" /></p>
+	<p>總計：<span id="out"></span></p>
+	<button onClick="add()">相加</button>
+	<button onClick="sub()">相減</button>
+	<button onClick="runGo()">呼叫其他方法</button>
+</body>
+
+</html>
