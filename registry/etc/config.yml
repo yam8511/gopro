@@ -11,6 +11,9 @@ http:
   addr: :5000
   headers:
     X-Content-Type-Options: [nosniff]
+    Access-Control-Allow-Headers: ['Origin,Accept,Content-Type,Authorization']
+    Access-Control-Allow-Origin: ['*']
+    Access-Control-Allow-Methods: ['GET,POST,PUT,DELETE']
 health:
   storagedriver:
     enabled: true

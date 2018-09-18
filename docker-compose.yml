@@ -12,3 +12,40 @@ services:
   my-image:
     build: .
     image: 127.0.0.1:5000/gopro-image-test:alpine
+
+  humpback-web:
+    image: humpbacks/humpback-web:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./humpback/dbFiles:/humpback-web/dbFiles
+    environment:
+      - HUMPBACK_LISTEN_PORT=8000
+
+  # 如果想使用 humpback 查看本機容器狀態，需要額外打開以下註解進行設定
+  # 但是強烈推薦 **portainer**
+  # humpback-agent:
+  #   image: humpbacks/humpback-agent:latest
+  #   volumes:
+  #     - /var/run/:/var/run/:rw
+  #   environment:
+  #     - DOCKER_API_VERSION=v1.38
+  #     - DOCKER_CLUSTER_ENABLED=false
+
+  # 如果單純只開啟獨立的 portainer，可只下一句指令
+  # docker run -d -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock portainer/portainer
+  # portainer:
+  #   image: portainer/portainer
+  #   ports:
+  #     - "9000:9000"
+  #   command: -H unix:///var/run/docker.sock
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - ./portainer:/data
+
+  # rancher:
+  #   image: rancher/rancher:latest
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
