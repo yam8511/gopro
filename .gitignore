@@ -1,2 +1,5 @@
 .env
 .vscode
+data/
+drone/
+humpback/
