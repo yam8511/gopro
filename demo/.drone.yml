@@ -16,15 +16,9 @@ pipeline:
   # 詳細說明請參照 http://plugins.drone.io/drone-plugins/drone-docker/
   publish:
     image: plugins/docker
-    # 必須指定要使用哪個secrets，會自動映射到環境變數
-    # 請自行到 Drone 的頁面上，加入 Secret 的變數
-    # 若不想設定 Secret，可註解第20行，打開下面兩行，並改成自己的資料 (21,22,23)
-    secrets: [ docker_username, docker_password, plugin_repo ]
-    # repo: registry:5000/myimg
-    # registry: registry:5000
-    # username: [docker hub username]
-    # password: [docker hub password]
-    # repo: [docker hub repo]
+    repo: registry:5000/myimg
+    registry: registry:5000
+    insecure: true
     auto_tag: true
     auto_tag_suffix: alpine
 

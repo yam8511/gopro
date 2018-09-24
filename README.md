@@ -2,10 +2,10 @@
 
 預期的完整系統流程
 
-1. 版本控制管理 (Version Management)
-2. 自動測試部署 (CI/CD)
-3. 容器管理系統 (Container Management)
-4. 日誌管理系統 (Log Management)
+1. 版本控制系統 (Version Control System)
+2. 容器管理系統 (Container Management System)
+3. 自動測試部署 (CI/CD)
+4. 日誌管理系統 (Log Management System)
 
 p.s.  
 照理來說，應該還需要有個「監控系統」，來監督與分析每台機器或應用程序的負載情況。  
@@ -36,7 +36,7 @@ p.s.
     # for Container Management
     192.168.xxx.xxx  registry
     # for Log Management
-    192.168.xxx.xxx  fluentd
+    192.168.xxx.xxx  fluentd kibana
     ```
 
 3. 此文假設讀者已經熟悉 Git 相關的基本概念
@@ -47,7 +47,7 @@ p.s.
 
 ---
 
-## 版本控制管理 (Version Management)
+## 版本控制系統 (Version Control System)
 
 這邊選擇使用 Gitea 當做個人的 Git Server，因為開源、設定簡單、用Golang撰寫的。
 
@@ -114,49 +114,7 @@ p.s.
 
 ---
 
-## 自動測試部署 (CI/CD)
-
-這邊選擇使用 Drone 當做個人的 CI/CD 工具，因為客製化插件非常簡單，使用上很彈性。
-
-1. 啟動 drone-server、drone-agent
-
-    ```shell
-    docker-compose up -d drone-server drone-agent
-    ```
-
-    ps. 啟動後，須等待伺服器啟動，可以執行以下指令確認是否開啟完畢
-    ```shell
-    docker-compose logs -f drone-server
-    ```
-
-2. 開啟 drone-server [[傳送門](http://drone-server:8000)]，並以 gitea 帳號登入
-
-    ```md
-    Username: demo
-    Password: qwe123
-    ```
-
-3. 在 drone 頁面，開啟 demo/demo 的開關 (右側的小圈圈)
-
-4. 檢查 Gitea Webhook 是否有新連結 [[傳送門](http://gitea:3000/demo/demo/settings/hooks)]
-
-5. 開始進行專案的CI/CD
-
-    5-1. 請任意做一個 commit，然後 push 上去。
-    5-2. 查看[Drone頁面](http://drone-server:8000/demo/demo)，是否有運行 Pipeline 流程
-    5-3. 結果如果有叉叉，純屬自然現象。
-
-### Drone 錯誤處理
-
-1. 如果頁面打不開，確認 drone-server 是否有啟動成功
-2. 如果一直呈現鬧鐘狀態，沒有運行，確認 drone-agent 是否有啟動成功
-3. 如果無法連線，確認 /etc/hosts 有沒有設定「前提準備」所指定的
-4. 確認 drone-agent 有掛載到本機 /var/run/docker.sock
-5. 如果上面4點都確認OK，請刪除 drone 資料夾，在從頭重試看看
-
----
-
-## 容器管理系統 (Container Management)
+## 容器管理系統 (Container Management System)
 
 專案開發上，個人選擇使用 [Docker](https://www.docker.com/) 搭配 [Docker Compose](https://docs.docker.com/compose/)，進行最簡易的容器建立。  
 而容器倉庫，則使用 Docker 官方提供的 [Registry 映像檔](https://hub.docker.com/_/registry/)，來建立私人倉庫。  
@@ -237,7 +195,7 @@ p.s.
     4-3. 上傳映像檔
 
         ```shell
-        docker tag registry:5000/myimg 192.168.xxx.xxx:5000/myimg
+        docker push registry:5000/myimg
         ```
 
     4-4. 點選 Hub，查看儲存的映像檔 [[傳送門](http://registry:5252/hub)]
@@ -252,7 +210,82 @@ p.s.
 
 ---
 
-## 日誌管理系統 (Log Management)
+## 自動測試部署 (CI/CD)
+
+這邊選擇使用 Drone 當做個人的 CI/CD 工具，因為客製化插件非常簡單，使用上很彈性。
+
+1. 啟動 drone-server、drone-agent
+
+    ```shell
+    docker-compose up -d drone-server drone-agent
+    ```
+
+    ps. 啟動後，須等待伺服器啟動，可以執行以下指令確認是否開啟完畢
+    ```shell
+    docker-compose logs -f drone-server
+    ```
+
+2. 開啟 drone-server [[傳送門](http://drone-server:8000)]，並以 gitea 帳號登入
+
+    ```md
+    Username: demo
+    Password: qwe123
+    ```
+
+3. 在 drone 頁面，開啟 demo/demo 的開關 (右側的小圈圈)
+
+4. 檢查 Gitea Webhook 是否有新連結 [[傳送門](http://gitea:3000/demo/demo/settings/hooks)]
+
+5. 開始進行專案的CI/CD
+
+    5-1. 請任意做一個 commit，然後 push 上去。
+    5-2. 查看[Drone頁面](http://drone-server:8000/demo/demo)，是否有運行 Pipeline 流程
+    5-3. 結果如果有叉叉，純屬自然現象。
+
+### Drone 錯誤處理
+
+1. 如果頁面打不開，確認 drone-server 是否有啟動成功
+2. 如果一直呈現鬧鐘狀態，沒有運行，確認 drone-agent 是否有啟動成功
+3. 如果無法連線，確認 /etc/hosts 有沒有設定「前提準備」所指定的
+4. 確認 drone-agent 有掛載到本機 /var/run/docker.sock
+5. 如果上面4點都確認OK，請刪除 drone 資料夾，在從頭重試看看
+
+---
+
+## 日誌管理系統 (Log Management System)
+
+這邊選擇使用 Elasticsearch(資料庫)、Fluentd(處理工具)、Kibana(介面) 組合，當做系統的日誌管理系統
+
+1. 啟動 elasticsearch、fluentd、kibana
+
+    ```shell
+    docker-compose up -d elasticsearch fluentd kibana
+    ```
+
+    ps. 啟動後，須等待伺服器啟動，可以執行以下指令確認是否開啟完畢
+    ```shell
+    docker-compose logs -f fluentd
+    ```
+
+2. 開啟 Kibana [[傳送門](http://kibana:5601)]，並初始化設定
+
+    2-1. Index pattern：「logstash-*」 改為 「fluentd-*」
+
+    2-2. Time Filter field name：打勾「Expand index pattern when searching [DEPRECATED]」
+
+    2-3. 點擊「Create」
+
+3. 打開網頁伺服器，產生訊息
+
+    3-1. 開啟 web
+
+        ```shell
+        docker-compose up -d web
+        ```
+
+    3-2 開啟頁面 [[傳送門](http://127.0.0.1)]
+
+4. 瀏覽日誌紀錄 [[傳送門](http://kibana:5601/app/kibana#/discover)]
 
 ---
 
@@ -265,13 +298,13 @@ p.s.
 1. 版本控制管理 (Version Management)
     - [Gitea安裝](https://docs.gitea.io/zh-tw/install-with-docker/)
 
-2. 自動測試部署 (CI/CD)
-    - [Drone安裝](http://docs.drone.io/installation/)
-    - [Drone使用](http://docs.drone.io/getting-started/)
-
-3. 容器管理系統 (Container Management)
+2. 容器管理系統 (Container Management)
     - [編譯與上傳映像檔](http://blog.poetries.top/handbook/html/%E6%9C%8D%E5%8A%A1%E7%AB%AF/docker.html#t13Docker%E7%A7%81%E6%9C%89%E4%BB%93%E5%BA%93%E6%90%AD%E5%BB%BA)
     - [建立容器倉庫](https://humpback.github.io/humpback/#/run-registry)
     - [Humpback 頁面建立](https://humpback.github.io/humpback/#/run-humpback-web)
+
+3. 自動測試部署 (CI/CD)
+    - [Drone安裝](http://docs.drone.io/installation/)
+    - [Drone使用](http://docs.drone.io/getting-started/)
 
 4. 日誌管理系統 (Log Management)
