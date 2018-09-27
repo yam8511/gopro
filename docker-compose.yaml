@@ -2,7 +2,8 @@ version: '3'
 
 services:
   reverse-proxy:
-    image: traefik:1.6
+    image: traefik:1.7
+    command: --configFile=/etc/traefik/traefik.toml
     ports:
       - "80:80"     # The HTTP port
       - "8080:8080" # The Web UI (enabled by --api)

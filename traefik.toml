@@ -135,7 +135,6 @@
 # File configuration backend
 ################################################################
 [file]
-watch = true
 
 [frontends]
   [frontends.frontend1]
@@ -151,8 +150,8 @@ watch = true
   [backends.backend1]
     [backends.backend1.servers.server1]
     url = "http://whoami:80"
-    weight = 0
+    weight = 1
   [backends.backend2]
     [backends.backend2.servers.server1]
     url = "http://whoami2:80"
-    weight = 0
+    weight = 1
