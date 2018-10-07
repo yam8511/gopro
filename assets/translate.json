@@ -1,0 +1,28 @@
+[
+    {
+        "Language": "en",
+        "Dictionary": [
+            {
+                "Name": "hello",
+                "Template": "Hello {{ .Name }}"
+            },
+            {
+                "Name": "greeter",
+                "Template": "Nice to meet you"
+            }
+        ]
+    },
+    {
+        "Language": "cn",
+        "Dictionary": [
+            {
+                "Name": "hello",
+                "Template": "哈囉 {{ .Name }}"
+            },
+            {
+                "Name": "greeter",
+                "Template": "初次見面"
+            }
+        ]
+    }
+]
