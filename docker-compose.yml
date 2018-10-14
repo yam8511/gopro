@@ -7,7 +7,7 @@ services:
       - "10022:22"
       - "3000:3000"
     volumes:
-      - ./data:/data
+      - ./data/gitea:/data
     depends_on:
       - pgsql
 
@@ -15,6 +15,8 @@ services:
     image: postgres:alpine
     ports:
       - "5432:5432"
+    volumes:
+      - ./data/pgsql:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=qwe123
@@ -38,7 +40,7 @@ services:
     ports:
       - "5252:5252"
     volumes:
-      - ./humpback/dbFiles:/humpback-web/dbFiles
+      - ./data/humpback/dbFiles:/humpback-web/dbFiles
     environment:
       - HUMPBACK_LISTEN_PORT=5252
 
@@ -47,7 +49,7 @@ services:
     ports:
       - 8000:8000
     volumes:
-      - ./drone:/var/lib/drone/
+      - ./data/drone:/var/lib/drone/
     restart: always
     environment:
       - DRONE_OPEN=true
@@ -60,6 +62,7 @@ services:
       # - DRONE_GITHUB_CLIENT=${DRONE_GITHUB_CLIENT}
       # - DRONE_GITHUB_SECRET=${DRONE_GITHUB_SECRET}
       - DRONE_SECRET=drone-ci
+      - DRONE_ADMIN=demo
 
   drone-agent:
     image: drone/agent:0.8
@@ -94,31 +97,37 @@ services:
   kibana:
     image: kibana
     ports:
-      - 5601:5601
-
-  web:
-    image: golang:1.11-alpine
-    ports:
-      - "80:8080"
-    command: go run main.go
-    working_dir: /app
-    volumes:
-      - ./demo:/app
-      - $GOPATH:/go
-    depends_on:
-      - fluentd
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: fluentd:24224
-        tag: httpd.access
+      - "5601:5601"
 
   ubuntu-1:
     build: ./sshd
     image: sshd
     tty: true
+    hostname: zuolar1
+    depends_on:
+      - dind
+    ports:
+      - "9922:22"
+    volumes:
+      - dd:/var/run
 
-  ubuntu-2:
-    build: ./sshd
-    image: sshd
+  dind:
+    image: docker:dind
     tty: true
+    privileged: true
+    ports:
+      - "8888:8888"
+    volumes: 
+      - dd:/var/run
+      - ./docker/daemon.json:/etc/docker/daemon.json
+
+  portainer:
+    image: portainer/portainer
+    ports:
+      - "9001:9000"
+    volumes: 
+      - dd:/var/run
+
+volumes: 
+  dd:
+    driver: local

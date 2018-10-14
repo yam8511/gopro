@@ -13,7 +13,7 @@ func main() {
 		log.Println(msg)
 		w.Write([]byte(msg))
 	})
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8888", nil)
 }
 
 // GetDemo 範利用

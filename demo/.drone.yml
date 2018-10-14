@@ -3,26 +3,55 @@ workspace:
   path: src/demo
 
 pipeline:
-  # 編譯並測試
-  build:
+  # 測試
+  test:
     image: golang:${GO_VERSION}
     commands:
       - go fmt $(go list ./... | grep -v /vendor/)
       - go vet $(go list ./... | grep -v /vendor/)
       - go test -race $(go list ./... | grep -v /vendor/)
-      - go build
+      - go build -o tmp
+      - rm tmp
+      - rm -r .git
 
-  # 發佈映像檔到 docker hub
-  # 詳細說明請參照 http://plugins.drone.io/drone-plugins/drone-docker/
+  # [模擬]同步檔案到機器上
+  scp:
+    group: publish
+    image: appleboy/drone-scp
+    host: 192.168.2.137 # ---> 輸入自己電腦的IP
+    username: root
+    password: qwe123
+    port: 9922
+    target: /app
+    source: ./*
+    rm: true
+
+
+  # 發佈映像檔到 docker registry
   publish:
-    image: plugins/docker
-    repo: registry:5000/myimg
-    registry: registry:5000
-    insecure: true
-    auto_tag: true
-    auto_tag_suffix: alpine
+    group: publish
+    image: docker
+    commands:
+      - docker build -t registry:5000/myimg:latest .
+      - docker push registry:5000/myimg:latest
+      - docker image prune -f
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
-  # 部署 [待補]
+  # ssh 部署
+  deploy:
+    image: appleboy/drone-ssh
+    username: root
+    password: qwe123
+    host: 192.168.2.137 # ---> 輸入自己電腦的IP
+    port: 9922
+    script:
+      - cd /app
+      - docker pull registry:5000/myimg
+      - docker-compose up -d web
+      - docker image prune -f
+
+  # k8s 部署 [待補]
   # deploy:
   #   image: quay.io/honestbee/drone-kubernetes
   #   kubernetes_server: https://kubernetes.company.org
@@ -56,7 +85,13 @@ pipeline:
       ; {{build.link}}
     # 有 when 的話，即使上面失敗了，也會執行這個步驟
     when:
-      status: [ success, failure ]
+      status: [ failure ]
+      # status: [ success, failure ]
+
+# services:
+#   docker:
+#     image: docker:dind
+#     privileged: true
 
 matrix:
   GO_VERSION:

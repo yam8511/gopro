@@ -1,11 +1,11 @@
-FROM golang:1.11-alpine
-
+# Build Stage
+FROM golang:1.11-alpine AS builder
 COPY . /go/src/demo
 WORKDIR /go/src/demo
-
-RUN pwd
-RUN ls -al
 RUN go build -o app
-RUN rm -rf $(ls | grep -v app | xargs)
 
-ENTRYPOINT [ "./app" ]
+
+# Final Stage
+FROM alpine
+COPY --from=builder /go/src/demo/app /
+ENTRYPOINT [ "/app" ]

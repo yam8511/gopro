@@ -238,9 +238,10 @@ p.s.
 
 5. 開始進行專案的CI/CD
 
-    5-1. 請任意做一個 commit，然後 push 上去。
-    5-2. 查看[Drone頁面](http://drone-server:8000/demo/demo)，是否有運行 Pipeline 流程
-    5-3. 結果如果有叉叉，純屬自然現象。
+    5-1. 修改「.drone.yml」裡面的「host」，改為自己電腦的IP。
+    5-2. 請任意做一個 commit，然後 push 上去。
+    5-3. 查看[Drone頁面](http://drone-server:8000/demo/demo)，是否有運行 Pipeline 流程
+    5-4. 結果如果有叉叉，純屬自然現象。
 
 ### Drone 錯誤處理
 
@@ -267,23 +268,24 @@ p.s.
     docker-compose logs -f fluentd
     ```
 
-2. 開啟 Kibana [[傳送門](http://kibana:5601)]，並初始化設定
+2. 先打開網頁伺服器，產生訊息
 
-    2-1. Index pattern：「logstash-*」 改為 「fluentd-*」
-
-    2-2. Time Filter field name：打勾「Expand index pattern when searching [DEPRECATED]」
-
-    2-3. 點擊「Create」
-
-3. 打開網頁伺服器，產生訊息
-
-    3-1. 開啟 web
+    2-1. 開啟 web
 
         ```shell
         docker-compose up -d web
         ```
 
-    3-2 開啟頁面 [[傳送門](http://127.0.0.1)]
+    2-2 開啟頁面 [[傳送門](http://127.0.0.1:8888)]
+
+
+3. 開啟 Kibana [[傳送門](http://kibana:5601)]，並初始化設定
+
+    3-1. Index pattern：「logstash-*」 改為 「fluentd-*」 # ---> 這邊需要「步驟2-2」才有辦法填  
+
+    3-2. Time Filter field name：打勾「Expand index pattern when searching [DEPRECATED]」
+
+    3-3. 點擊「Create」
 
 4. 瀏覽日誌紀錄 [[傳送門](http://kibana:5601/app/kibana#/discover)]
 
