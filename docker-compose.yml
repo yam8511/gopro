@@ -1,0 +1,17 @@
+version: '3'
+
+services: 
+  web:
+    build: .
+    image: goapp
+    working_dir: /go/src/app
+    volumes:
+      - ./upload:/go/src/app/upload
+    ports:
+      - "8000:8000"
+    deploy:
+      mode: replicated
+      replicas: 3
+      placement:
+        constraints:
+          - node.role == worker
