@@ -2,7 +2,7 @@
 
 - 允許k8s主機也加入工作機群
 
-kubectl taint node --all
+kubectl taint nodes --all node-role.kubernetes.io/master-
 
 p.s. 只建議在本機使用，產品上勿用
 
