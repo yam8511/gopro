@@ -1,0 +1,8 @@
+/*
+!/home
+!.gitignore
+!docker-compose.yml
+!docker-compose2.yml
+!README.md
+!main.go
+!/vendor

@@ -5,12 +5,11 @@ services:
     build: .
     image: registry:5000/goapp
     ports:
-      - "8000:8000"
+      - "8002:8000"
     networks:
-      - external
-      - internal
+      - zzz_external
     environment:
-      - APP=web
+      - APP=web2
     deploy:
       mode: replicated
       replicas: 1
@@ -48,11 +47,11 @@ services:
     build: .
     image: registry:5000/goapp
     ports:
-      - "8001:8000"
+      - "8003:8000"
     networks:
-      - internal
+      - zzz_external
     environment:
-      - APP=mob
+      - APP=mob2
     deploy:
       mode: replicated
       replicas: 1
@@ -87,7 +86,5 @@ services:
           - node.role == manager
 
 networks:
-  internal:
-    driver: overlay
-  external:
-    driver: overlay
+  zzz_external:
+    external: true
