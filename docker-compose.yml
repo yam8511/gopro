@@ -3,6 +3,7 @@ version: '2'
 services:
   web:
     image: golang:1.11-alpine
+    hostname: web
     ports:
       - "80:8080"
     command: go run hello.go
@@ -12,28 +13,18 @@ services:
       - $GOPATH:/go
     environment:
       - GIN_MODE=debug
-    depends_on:
-      - fluentd
     logging:
-      driver: "fluentd"
+      driver: json-file
       options:
-        fluentd-address: fluentd:24224
-        tag: httpd.access
+        env: ${ENV}
+        labels: demo_web
 
-  fluentd:
-    build: ./fluentd
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:6.4.2
+    user: root
     volumes:
-      - ./fluentd/conf:/fluentd/etc
-    links:
-      - "elasticsearch"
-    ports:
-      - "24224:24224"
-      - "24224:24224/udp"
-    logging:
-        driver: "json-file"
-        options:
-            max-size: 100m
-            max-file: "5"
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - /var/lib/docker/containers:/var/lib/docker/containers
 
   elasticsearch:
     image: elasticsearch
