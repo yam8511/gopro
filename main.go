@@ -48,7 +48,20 @@ func main() {
 	}
 
 	// 印出整頁
-	PrintPageLayout(pdf, "這是一大串標題", "9453", "人仁科技", "2018/11/30")
+	PrintPDF(pdf, "這是一大串標題", "9453", "人仁科技", "2018/11/30")
+
+	// 產生PDF檔案
+	err = pdf.WritePdf("hello.pdf")
+	log.Println("OK,", err)
+}
+
+// PrintPDF 印出PDF
+func PrintPDF(
+	pdf *gopdf.GoPdf,
+	title, siteCode, siteName, auditDate string,
+) {
+	// 印出整頁
+	PrintPageLayout(pdf, title, siteCode, siteName, auditDate)
 
 	count := 13 // 缺失數量
 	var y, h float64 = 5.5, 4.5
@@ -64,13 +77,9 @@ func main() {
 		if i%5 == 0 && i != count {
 			y = 5.5
 			// 印出整頁
-			PrintPageLayout(pdf, "這是一大串標題", "9453", "人仁科技", "2018/11/30")
+			PrintPageLayout(pdf, title, siteCode, siteName, auditDate)
 		}
 	}
-
-	// 產生PDF檔案
-	err = pdf.WritePdf("hello.pdf")
-	log.Println("OK,", err)
 }
 
 // PrintTableRow 印出一筆資料
@@ -177,22 +186,32 @@ func PrintTableText(pdf *gopdf.GoPdf, w, h, x, y float64, text string, opt *gopd
 // PrintTableTime 印出表格文字
 func PrintTableTime(pdf *gopdf.GoPdf, w, h, x, y float64, t time.Time, opt *gopdf.CellOption) {
 	// 內文字體 14
-	tableBodyCellOpt := gopdf.CellOption{}
+	tableBodyCellOpt := gopdf.CellOption{
+		Align: gopdf.Bottom | gopdf.Center,
+	}
 	if opt != nil {
 		tableBodyCellOpt = *opt
 	}
 
 	pdf.CellWithOption(GetRect(w, h), "", tableBodyCellOpt)
-	paddingTop := (4.5 - fontH*2) / 2 // 距離上方
+	// paddingTop := (4.5 - fontH*2) / 2 // 距離上方
 	// log.Println("字串長度--->", txtLen)
 	// log.Println("字數--->", fontNum)
 	// log.Println("行數--->", lineNum)
 	// log.Println("距離上方--->", paddingTop)
+
 	ChangeFont(pdf, "en", 14)
-	ChangeCursorPoint(pdf, x+0.2, y+paddingTop+1*fontH)
-	pdf.Cell(nil, t.Format("2006/01/02"))
-	ChangeCursorPoint(pdf, x+0.2, y+paddingTop+2*fontH)
-	pdf.Cell(nil, t.Format("15:04:05"))
+	ChangeCursorPoint(pdf, 24, y)
+	pdf.CellWithOption(GetRect(w, h/2-0.1), t.Format("2006/01/02"), gopdf.CellOption{
+		Align: gopdf.Bottom | gopdf.Center,
+		// Border: gopdf.Bottom,
+	})
+
+	ChangeCursorPoint(pdf, 24, y+h/2)
+	pdf.CellWithOption(GetRect(w, h/2+0.1), t.Format("15:04:05"), gopdf.CellOption{
+		Align: gopdf.Top | gopdf.Center,
+		// Border: gopdf.Top,
+	})
 }
 
 // PrintPageLayout 印出整頁外框
