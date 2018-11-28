@@ -5,6 +5,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/signintech/gopdf"
 )
@@ -54,10 +55,10 @@ func main() {
 	for i := 1; i <= count; i++ {
 		PrintTableRow(
 			pdf, i, y, h,
-			"出入口未設置安全通道設施，停工罰款項目？",
-			"改善說明",
-			"改善時間",
+			"出入口未設置安全通道設施，停工罰款項目？是嗎，應該吧",
+			"是嗎，應該吧",
 			"snoopy.png", "snoopy.png",
+			time.Now(),
 		)
 		y += h
 		if i%5 == 0 && i != count {
@@ -77,8 +78,9 @@ func PrintTableRow(
 	pdf *gopdf.GoPdf,
 	i int,
 	y, h float64,
-	punchDescription, improvedDescription, improvedTime,
+	punchDescription, improvedDescription,
 	punchPhoto, improvedPhoto string,
+	improvedTime time.Time,
 ) {
 	// 內文字體 14
 	tableBodyCellOpt := gopdf.CellOption{
@@ -96,32 +98,7 @@ func PrintTableRow(
 	// 缺失說明
 	ChangeFont(pdf, "zh", 14)
 	ChangeCursorPoint(pdf, 4, y)
-	pdf.CellWithOption(GetRect(4, h), "", tableBodyCellOpt)
-	// 中文是 3 bytes, 英文數字是 1 byte
-	txtLen := len(punchDescription) / 3
-	fontNum := int((4*gridX - 0.4) / (fontW * gridX)) // 一行字數
-	lineNum := txtLen / fontNum                       // 有幾行
-	if txtLen%fontNum != 0 {
-		lineNum++
-	}
-	paddingTop := (4.5 - fontH*float64(lineNum)) / 2 // 距離上方
-	// log.Println("字串長度--->", txtLen)
-	// log.Println("字數--->", fontNum)
-	// log.Println("行數--->", lineNum)
-	// log.Println("距離上方--->", paddingTop)
-	for i := 0; i < lineNum; i++ {
-		txt := ""
-		if i == lineNum-1 {
-			H := i * 3 * fontNum
-			txt = punchDescription[H:]
-		} else {
-			H := i * 3 * fontNum
-			T := (i + 1) * 3 * fontNum
-			txt = punchDescription[H:T]
-		}
-		ChangeCursorPoint(pdf, 4.2, y+paddingTop+float64(i)*fontH)
-		pdf.Cell(nil, txt)
-	}
+	PrintTableText(pdf, 4, h, 4, y, punchDescription, &tableBodyCellOpt)
 
 	// 缺失照片
 	ChangeCursorPoint(pdf, 8, y)
@@ -136,7 +113,7 @@ func PrintTableRow(
 
 	// 改善說明
 	ChangeCursorPoint(pdf, 14, y)
-	pdf.CellWithOption(GetRect(4, h), "改善說明", tableBodyCellOpt)
+	PrintTableText(pdf, 4, h, 14, y, improvedDescription, &tableBodyCellOpt)
 
 	// 改善照片
 	ChangeCursorPoint(pdf, 18, y)
@@ -151,7 +128,71 @@ func PrintTableRow(
 
 	// 改善時間
 	ChangeCursorPoint(pdf, 24, y)
-	pdf.CellWithOption(GetRect(4, h), "改善時間", tableBodyCellOpt)
+	ChangeFont(pdf, "en", 14)
+	PrintTableTime(pdf, 4, h, 24, y, improvedTime, &tableBodyCellOpt)
+}
+
+// PrintTableText 印出表格文字
+func PrintTableText(pdf *gopdf.GoPdf, w, h, x, y float64, text string, opt *gopdf.CellOption) {
+	// 內文字體 14
+	tableBodyCellOpt := gopdf.CellOption{}
+	if opt != nil {
+		tableBodyCellOpt = *opt
+	}
+
+	// 中文是 3 bytes, 英文數字是 1 byte
+	txtLen := len(text) / 3
+	fontNum := int((w*gridX - 0.4) / (fontW * gridX)) // 一行字數
+	lineNum := txtLen / fontNum                       // 有幾行
+	if txtLen%fontNum != 0 {
+		lineNum++
+	}
+
+	if lineNum > 1 {
+		pdf.CellWithOption(GetRect(w, h), "", tableBodyCellOpt)
+		paddingTop := (4.5 - fontH*float64(lineNum)) / 2 // 距離上方
+		// log.Println("字串長度--->", txtLen)
+		// log.Println("字數--->", fontNum)
+		// log.Println("行數--->", lineNum)
+		// log.Println("距離上方--->", paddingTop)
+		for i := 0; i < lineNum; i++ {
+			txt := ""
+			if i == lineNum-1 {
+				H := i * 3 * fontNum
+				txt = text[H:]
+			} else {
+				H := i * 3 * fontNum
+				T := (i + 1) * 3 * fontNum
+				txt = text[H:T]
+			}
+			ChangeCursorPoint(pdf, x+0.2, y+paddingTop+float64(i)*fontH)
+			pdf.Cell(nil, txt)
+		}
+	} else {
+		pdf.CellWithOption(GetRect(w, h), text, tableBodyCellOpt)
+	}
+
+}
+
+// PrintTableTime 印出表格文字
+func PrintTableTime(pdf *gopdf.GoPdf, w, h, x, y float64, t time.Time, opt *gopdf.CellOption) {
+	// 內文字體 14
+	tableBodyCellOpt := gopdf.CellOption{}
+	if opt != nil {
+		tableBodyCellOpt = *opt
+	}
+
+	pdf.CellWithOption(GetRect(w, h), "", tableBodyCellOpt)
+	paddingTop := (4.5 - fontH*2) / 2 // 距離上方
+	// log.Println("字串長度--->", txtLen)
+	// log.Println("字數--->", fontNum)
+	// log.Println("行數--->", lineNum)
+	// log.Println("距離上方--->", paddingTop)
+	ChangeFont(pdf, "en", 14)
+	ChangeCursorPoint(pdf, x+0.2, y+paddingTop+1*fontH)
+	pdf.Cell(nil, t.Format("2006/01/02"))
+	ChangeCursorPoint(pdf, x+0.2, y+paddingTop+2*fontH)
+	pdf.Cell(nil, t.Format("15:04:05"))
 }
 
 // PrintPageLayout 印出整頁外框
