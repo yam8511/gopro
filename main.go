@@ -11,9 +11,51 @@ const (
 	RegexpEmail    = "^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$"
 	RegexpPassword = "^[\\w\\d]{6,14}$"
 	RegexpPhone    = "^[0-9]{10}$"
+	RegexEnglish   = "^[\\w\\d\\s`~!@#$%^&*()_+-=[\\]{}|?/><,.\":;'\\\\]$"
 )
 
 func main() {
+	re, err := regexp.Compile(RegexEnglish)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	log.Println("A", re.MatchString("A"))
+	log.Println("a", re.MatchString("a"))
+	log.Println("1", re.MatchString("1"))
+	log.Println("`", re.MatchString("`"))
+	log.Println("~", re.MatchString("~"))
+	log.Println("!", re.MatchString("!"))
+	log.Println("@", re.MatchString("@"))
+	log.Println("#", re.MatchString("#"))
+	log.Println("$", re.MatchString("$"))
+	log.Println("%", re.MatchString("%"))
+	log.Println("^", re.MatchString("^"))
+	log.Println("&", re.MatchString("&"))
+	log.Println("*", re.MatchString("*"))
+	log.Println("(", re.MatchString("("))
+	log.Println(")", re.MatchString(")"))
+	log.Println("_", re.MatchString("_"))
+	log.Println("+", re.MatchString("+"))
+	log.Println("-", re.MatchString("-"))
+	log.Println("=", re.MatchString("="))
+	log.Println("[", re.MatchString("["))
+	log.Println("]", re.MatchString("]"))
+	log.Println("\\", re.MatchString("\\"))
+	log.Println("{", re.MatchString("{"))
+	log.Println("}", re.MatchString("}"))
+	log.Println("|", re.MatchString("|"))
+	log.Println(";", re.MatchString(";"))
+	log.Println(":", re.MatchString(":"))
+	log.Println("'", re.MatchString("'"))
+	log.Println("\"", re.MatchString("\""))
+	log.Println("/", re.MatchString("/"))
+	log.Println("?", re.MatchString("?"))
+	log.Println(".", re.MatchString("."))
+	log.Println(">", re.MatchString(">"))
+	log.Println(",", re.MatchString(","))
+	log.Println("<", re.MatchString("<"))
+
 	invalidEmail := "yam8511gmail.com"
 	email := "yam8511@gmail.com"
 	invalidPassword := "demo12"
