@@ -1,12 +1,15 @@
 package main
 
 import (
+	"Lv/app/common/data_struct"
+	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -54,25 +57,28 @@ func main() {
 }
 
 func runClient(n int) error {
-	url := "http://127.0.0.1:8000/api"
-
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("POST", "http://127.0.0.1:8000/api", nil)
 	if err != nil {
 		return fmt.Errorf("New Request : " + err.Error())
 	}
 
+	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("cache-control", "no-cache")
-	req.Header.Add("Postman-Token", "26d7fa44-e531-4d7f-8ec0-1f27810efd2a")
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("Do CLient : " + err.Error())
 	}
 
+	data := datastruct.API{}
 	defer res.Body.Close()
-	_, err = ioutil.ReadAll(res.Body)
+	err = json.NewDecoder(res.Body).Decode(&data)
 	if err != nil {
 		return fmt.Errorf("Read Body : " + err.Error())
+	}
+
+	if data.ErrorCode != 0 {
+		return errors.New(strconv.Itoa(data.ErrorCode) + ": " + data.ErrorText)
 	}
 	return nil
 }

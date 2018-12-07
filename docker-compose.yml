@@ -1,0 +1,20 @@
+version: '2'
+
+services:
+  c1:
+    image: ubuntu
+    command: /gopro -c -n 1000
+    volumes:
+      - ./gopro:/gopro
+
+  c2:
+    image: ubuntu
+    command: /gopro -c -n 1000
+    volumes:
+      - ./gopro:/gopro
+
+  c3:
+    image: ubuntu
+    command: /gopro -c -n 1000
+    volumes:
+      - ./gopro:/gopro
