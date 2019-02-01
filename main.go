@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/csv"
 	"encoding/json"
+	"flag"
 	"io"
 	"io/ioutil"
 	"log"
@@ -10,21 +11,23 @@ import (
 	"strings"
 )
 
-func getBits(b ...uint) (a uint64) {
-	for _, bb := range b {
-		a = a | 1<<bb
+func main() {
+	langJSONFile := flag.String("json", "", "語系的JSON檔案")
+	langCSVFile := flag.String("csv", "", "語系的CSV檔案")
+	flag.Parse()
+
+	if *langCSVFile == "" || *langJSONFile == "" {
+		flag.Usage()
+		log.Fatalln("請輸入 csv2json -json [語系.json] -csv [語系.csv]\n例如： ./csv2json -json lang.json -csv lang.csv")
+		return
 	}
 
-	return
-}
-
-func main() {
-	nowJSLang, err := readLangJSON("./lang.json")
+	nowJSLang, err := readLangJSON(*langJSONFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	langCSV, keys, err := readLangCSV("./lang.csv")
+	langCSV, keys, err := readLangCSV(*langCSVFile)
 	if err != nil {
 		log.Fatal(err)
 	}
