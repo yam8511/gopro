@@ -9,9 +9,34 @@ import (
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
-var bg *ebiten.Image
+// Game 遊戲
+type Game struct {
+	w, h  int
+	scale float64
+	title string
+	bg    *ebiten.Image
+}
 
-func update(screen *ebiten.Image) error {
+// Run 啟動遊戲
+func (g *Game) Run() error {
+	ebiten.SetCursorVisible(true)
+	bg, err := ebitenutil.NewImageFromURL("https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Go_Logo_Aqua.svg/1200px-Go_Logo_Aqua.svg.png")
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	g.bg = bg
+	g.h, g.w = ebiten.ScreenSizeInFullscreen()
+	g.scale = 1
+	g.title = "Hello World"
+	return ebiten.Run(g.render, g.h, g.w, g.scale, g.title)
+}
+
+func (g *Game) render(screen *ebiten.Image) error {
+	if !ebiten.IsFullscreen() {
+		ebiten.SetScreenSize(ebiten.ScreenSizeInFullscreen())
+	}
+
 	// 先畫圖
 	c := color.NRGBA{0x33, 0x33, 0x33, 0xFF}
 	screen.Fill(c)
@@ -20,14 +45,14 @@ func update(screen *ebiten.Image) error {
 	// opts.SourceRect.Max = image.Point{320, 240}
 	// opts.SourceRect.Min = image.Point{0, 0}
 	// opts.GeoM.Translate(float64(x), float64(y))
-	w, h := bg.Size()
+	w, h := g.bg.Size()
 	opts.GeoM.Scale(
 		320/float64(w),
 		320/float64(h),
 	)
 
 	// 渲染 square 畫布到 screen 主畫布上並套用空白選項
-	screen.DrawImage(bg, opts)
+	screen.DrawImage(g.bg, opts)
 
 	// 在印字
 	FPS := fmt.Sprintf("\n\n\n\n\nFPS: %f", ebiten.CurrentFPS())
@@ -56,7 +81,7 @@ func update(screen *ebiten.Image) error {
 		ebitenutil.DebugPrint(screen, "\n\n\nYou're pressing the 'RIGHT' button.")
 	}
 
-	if ebiten.IsKeyPressed(ebiten.KeyEscape) {
+	if ebiten.IsKeyPressed(ebiten.KeyQ) {
 		return errors.New("EXIT")
 	}
 
@@ -90,13 +115,8 @@ func update(screen *ebiten.Image) error {
 }
 
 func main() {
-	var err error
-	bg, err = ebitenutil.NewImageFromURL("https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Go_Logo_Aqua.svg/1200px-Go_Logo_Aqua.svg.png")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	err = ebiten.Run(update, 320, 240, 2, "Hello world!")
+	fmt.Println("Hello World")
+	game := new(Game)
+	err := game.Run()
 	fmt.Println(err)
 }
