@@ -2,14 +2,38 @@ package i18n
 
 import (
 	"bytes"
+	"io/ioutil"
 	"strings"
 	"text/template"
 
 	lua "github.com/yuin/gopher-lua"
+	"github.com/yuin/gopher-lua/parse"
 )
 
 const i18nRoot = "app/i18n"
 const luaFile = "main.lua"
+
+var proto *lua.FunctionProto
+
+// 提前編譯
+func init() {
+	source, err := ioutil.ReadFile(i18nRoot + "/" + luaFile)
+	if err != nil {
+		panic(err)
+	}
+
+	reader := bytes.NewBuffer(source)
+
+	chunk, err := parse.Parse(reader, reader.String())
+	if err != nil {
+		panic(err)
+	}
+
+	proto, err = lua.Compile(chunk, reader.String())
+	if err != nil {
+		panic(err)
+	}
+}
 
 // Trans 翻譯
 func Trans(lang, key string, args map[string]string) string {
@@ -65,9 +89,16 @@ func Trans(lang, key string, args map[string]string) string {
 	L.SetGlobal("split", L.NewFunction(split))
 	L.SetGlobal("mapping", L.NewFunction(mapping))
 
-	if err := L.DoFile(i18nRoot + "/" + luaFile); err != nil {
+	lfunc := L.NewFunctionFromProto(proto)
+	L.Push(lfunc)
+	err := L.PCall(0, lua.MultRet, nil)
+	if err != nil {
 		panic(err)
 	}
+
+	// if err := L.DoFile(i18nRoot + "/" + luaFile); err != nil {
+	// 	panic(err)
+	// }
 
 	return lua.LVAsString(L.GetGlobal("output"))
 }
