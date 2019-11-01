@@ -2,11 +2,11 @@ version: '3'
 
 services:
   web:
-    image: registry:5000/myimg
+    image: registry:5000/demo
     ports:
       - "8888:8888"
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: fluentd:24224
-        tag: httpd.access
+    # logging:
+    #   driver: "fluentd"
+    #   options:
+    #     fluentd-address: fluentd:24224
+    #     tag: httpd.access

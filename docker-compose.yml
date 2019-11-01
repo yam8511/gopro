@@ -2,70 +2,32 @@ version: '3'
 
 services:
   gitea:
-    image: gitea/gitea:latest
+    image: gitea/gitea:1.9.5
     ports:
       - "10022:22"
       - "3000:3000"
     volumes:
       - ./data/gitea:/data
-    depends_on:
-      - pgsql
-
-  pgsql:
-    image: postgres:alpine
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./data/pgsql:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=qwe123
-      - POSTGRES_DB=gitea
-
-  adminer:
-    image: adminer
-    ports:
-      - "8080:8080"
-
-  registry:
-    image: registry:2.6.2
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./registry/lib:/var/lib/registry
-      - ./registry/etc:/etc/docker/registry
-
-  humpback-web:
-    image: humpbacks/humpback-web:latest
-    ports:
-      - "5252:5252"
-    volumes:
-      - ./data/humpback/dbFiles:/humpback-web/dbFiles
-    environment:
-      - HUMPBACK_LISTEN_PORT=5252
 
   drone-server:
-    image: drone/drone:0.8
+    image: drone/drone:1.6.1
     ports:
       - 8000:8000
     volumes:
       - ./data/drone:/var/lib/drone/
     restart: always
     environment:
-      - DRONE_OPEN=true
-      - DRONE_HOST=http://drone-server:8000
-      - DRONE_GITEA=true
-      - DRONE_GITEA_URL=http://gitea:3000
-      - DRONE_GITEA_GIT_USERNAME=demo
-      - DRONE_GITEA_GIT_PASSWORD=qwe123
-      # - DRONE_GITHUB=true
-      # - DRONE_GITHUB_CLIENT=${DRONE_GITHUB_CLIENT}
-      # - DRONE_GITHUB_SECRET=${DRONE_GITHUB_SECRET}
-      - DRONE_SECRET=drone-ci
-      - DRONE_ADMIN=demo
+      - DRONE_GITEA_SERVER=http://gitea:3000
+      - DRONE_GITEA_CLIENT_ID=e7c88909-07ed-47d1-9591-4777da3ee5ab
+      - DRONE_GITEA_CLIENT_SECRET=rR5D-1pw6CASI4ZkBTHZuE7QwWQnlZ3vn3ktgwJhSIM=
+      - DRONE_RPC_SECRET=my-drone-server-secret
+      - DRONE_SERVER_HOST=drone-server:8000
+      - DRONE_SERVER_PORT=:8000
+      - DRONE_SERVER_PROTO=http
+      - DRONE_USER_CREATE=username:demo,admin:true
 
   drone-agent:
-    image: drone/agent:0.8
+    image: drone/agent:1.6.1
     command: agent
     restart: always
     depends_on:
@@ -73,31 +35,11 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - DRONE_SERVER=drone-server:9000
-      - DRONE_SECRET=drone-ci
-
-  fluentd:
-    build: ./fluentd
-    volumes:
-      - ./fluentd/conf:/fluentd/etc
-    links:
-      - "elasticsearch"
-    ports:
-      - "24224:24224"
-      - "24224:24224/udp"
-    logging:
-        driver: "json-file"
-        options:
-            max-size: 100m
-            max-file: "5"
-
-  elasticsearch:
-    image: elasticsearch
-
-  kibana:
-    image: kibana
-    ports:
-      - "5601:5601"
+      - DRONE_RPC_PROTO=http
+      - DRONE_RPC_HOST=drone-server:8000
+      - DRONE_RPC_SECRET=my-drone-server-secret
+      - DRONE_RUNNER_CAPACITY=2
+      - DRONE_RUNNER_NAME=my-agent1
 
   ubuntu-1:
     build: ./sshd
@@ -117,7 +59,7 @@ services:
     privileged: true
     ports:
       - "8888:8888"
-    volumes: 
+    volumes:
       - dd:/var/run
       - ./docker/daemon.json:/etc/docker/daemon.json
 
@@ -125,9 +67,9 @@ services:
     image: portainer/portainer
     ports:
       - "9001:9000"
-    volumes: 
+    volumes:
       - dd:/var/run
 
-volumes: 
+volumes:
   dd:
     driver: local

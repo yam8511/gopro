@@ -1,99 +1,33 @@
-workspace:
-  base: /go
-  path: src/demo
+kind: pipeline
+type: docker
+name: default
 
-pipeline:
+steps:
   # 測試
-  test:
-    image: golang:${GO_VERSION}
+  - name: test
+    image: golang:1.13
     commands:
+      - pwd
+      - ls -al
       - go fmt $(go list ./... | grep -v /vendor/)
       - go vet $(go list ./... | grep -v /vendor/)
       - go test -race $(go list ./... | grep -v /vendor/)
       - go build -o tmp
       - rm tmp
-      - rm -r .git
-
-  # [模擬]同步檔案到機器上
-  scp:
-    group: publish
-    image: appleboy/drone-scp
-    host: 192.168.2.137 # ---> 輸入自己電腦的IP
-    username: root
-    password: qwe123
-    port: 9922
-    target: /app
-    source: ./*
-    rm: true
-
 
   # 發佈映像檔到 docker registry
-  publish:
-    group: publish
+  - name: publish
     image: docker
     commands:
-      - docker build -t registry:5000/myimg:latest .
-      - docker push registry:5000/myimg:latest
+      - rm -r .git
+      - docker build -t registry:5000/demo:latest .
+      - docker push registry:5000/demo:latest
       - docker image prune -f
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - name: docker
+        path: /var/run/docker.sock
 
-  # ssh 部署
-  deploy:
-    image: appleboy/drone-ssh
-    username: root
-    password: qwe123
-    host: 192.168.2.137 # ---> 輸入自己電腦的IP
-    port: 9922
-    script:
-      - cd /app
-      - docker pull registry:5000/myimg
-      - docker-compose up -d web
-      - docker image prune -f
-
-  # k8s 部署 [待補]
-  # deploy:
-  #   image: quay.io/honestbee/drone-kubernetes
-  #   kubernetes_server: https://kubernetes.company.org
-  #   kubernetes_token: CXHVLJSDKJFS...
-  #   namespace: app
-  #   deployment: my-deployment
-  #   repo: myorg/myrepo
-  #   container: my-container
-  #   tag: mytag
-
-  # 通知發佈成功與否
-  notify:
-    image: appleboy/drone-telegram
-    # 必須指定要使用哪個secrets，會自動映射到環境變數
-    # 請自行到 Drone 的頁面上，加入 Secret 的變數
-    secrets: [ plugin_token, plugin_to ]
-    # 若不想設定 Secret，可註解第39行，打開下面兩行，並改成自己的資料 (41,42)
-    # token: [TELEGRAM_BOT_TOKEN]
-    # to: [USER_ID or GROUP_ID]
-    format: markdown
-    # 請參照說明：http://plugins.drone.io/appleboy/drone-telegram/
-    message: >
-      No. {{build.number}};
-      專案『{{repo.name}}』; 分支『[{{commit.branch}}]({{commit.link}})』
-      提交訊息：{{commit.message}}
-      {{#success build.status}}
-      編譯測試正常，已發佈
-      {{else}}
-      編譯測試失敗，請修正
-      {{/success}}
-      ; {{build.link}}
-    # 有 when 的話，即使上面失敗了，也會執行這個步驟
-    when:
-      status: [ failure ]
-      # status: [ success, failure ]
-
-# services:
-#   docker:
-#     image: docker:dind
-#     privileged: true
-
-matrix:
-  GO_VERSION:
-    - latest
-    # - 1.9
+volumes:
+- name: docker
+  host:
+    path: /var/run/docker.sock

@@ -7,9 +7,9 @@
 3. 自動測試部署 (CI/CD)
 4. 日誌管理系統 (Log Management System)
 
-p.s.  
-照理來說，應該還需要有個「監控系統」，來監督與分析每台機器或應用程序的負載情況。  
-但因為使用「容器管理系統」，有機會直接運用容器管理系統進行負載查看。  
+p.s.
+照理來說，應該還需要有個「監控系統」，來監督與分析每台機器或應用程序的負載情況。
+但因為使用「容器管理系統」，有機會直接運用容器管理系統進行負載查看。
 
 ---
 
@@ -116,11 +116,11 @@ p.s.
 
 ## 容器管理系統 (Container Management System)
 
-專案開發上，個人選擇使用 [Docker](https://www.docker.com/) 搭配 [Docker Compose](https://docs.docker.com/compose/)，進行最簡易的容器建立。  
-而容器倉庫，則使用 Docker 官方提供的 [Registry 映像檔](https://hub.docker.com/_/registry/)，來建立私人倉庫。  
-那或許會問為什摩不使用 [Kubernetes](https://kubernetes.io/) 呢？ 用！當然用！  
-只是目前重點放在「最簡易的容器建立」，所以採取 Docker Compose。  
-但是如果是在正式環境，則推薦使用 Kubernetes！  
+專案開發上，個人選擇使用 [Docker](https://www.docker.com/) 搭配 [Docker Compose](https://docs.docker.com/compose/)，進行最簡易的容器建立。
+而容器倉庫，則使用 Docker 官方提供的 [Registry 映像檔](https://hub.docker.com/_/registry/)，來建立私人倉庫。
+那或許會問為什摩不使用 [Kubernetes](https://kubernetes.io/) 呢？ 用！當然用！
+只是目前重點放在「最簡易的容器建立」，所以採取 Docker Compose。
+但是如果是在正式環境，則推薦使用 Kubernetes！
 
 目前先來建立個人的容器倉庫：
 
@@ -153,15 +153,15 @@ p.s.
 
     3-2. 設定容器倉庫的網址
 
-        點選 Manage > System Config > Enabel Private Registry  
-        輸入 `http://registry:5000`  
-        點擊 Save  
+        點選 Manage > System Config > Enabel Private Registry
+        輸入 `http://registry:5000`
+        點擊 Save
 
     3-3. 點選 Hub，查看儲存的映像檔
 
 4. 測試能不能正常上傳映像檔
 
-    注意！因為 Docker 上傳映像檔，預設使用 HTTPS 協定連線  
+    注意！因為 Docker 上傳映像檔，預設使用 HTTPS 協定連線
     所以上傳映像檔，需要先設定 docker， 讓他可忽略安全性
 
     4-1. Docker 設定
@@ -281,7 +281,7 @@ p.s.
 
 3. 開啟 Kibana [[傳送門](http://kibana:5601)]，並初始化設定
 
-    3-1. Index pattern：「logstash-*」 改為 「fluentd-*」 # ---> 這邊需要「步驟2-2」才有辦法填  
+    3-1. Index pattern：「logstash-*」 改為 「fluentd-*」 # ---> 這邊需要「步驟2-2」才有辦法填
 
     3-2. Time Filter field name：打勾「Expand index pattern when searching [DEPRECATED]」
 
