@@ -56,32 +56,32 @@ func main() {
 
 	// 先校準單位
 ADJUST:
-	// 	adjust := func(action string, start, end func(), unit *time.Duration) {
-	// 		log.Printf("倒數3秒後，將%s車子進行單位校準，移動一個單位後請按下Enter\n", action)
-	// 		for i := 3; i > 0; i-- {
-	// 			log.Println(i, ".. ")
-	// 			time.Sleep(time.Second)
-	// 		}
+	adjust := func(action string, start, end func(), unit *time.Duration) {
+		log.Printf("倒數3秒後，將%s車子進行單位校準，移動一個單位後請按下Enter\n", action)
+		for i := 3; i > 0; i-- {
+			log.Println(i, ".. ")
+			time.Sleep(time.Second)
+		}
 
-	// 		fmt.Println("請輸入任意鍵...")
-	// 		now := time.Now()
-	// 		start()
-	// 		fmt.Scanln(&c)
-	// 		*unit = time.Since(now)
-	// 		end()
-	// 	}
+		fmt.Println("請輸入任意鍵...")
+		now := time.Now()
+		start()
+		fmt.Scanln(&c)
+		*unit = time.Since(now)
+		end()
+	}
 
-	// 	adjust("前進", func() {}, func() {}, &ForwardMeterUnit)
-	// 	log.Println("前進距離平均一單是 ", ForwardMeterUnit)
+	adjust("前進", func() {}, func() {}, &ForwardMeterUnit)
+	log.Println("前進距離平均一單是 ", ForwardMeterUnit)
 
-	// 	adjust("右旋", func() {}, func() {}, &RightAngleUnit)
-	// 	log.Println("右旋角度平均一單是 ", RightAngleUnit)
+	adjust("右旋", func() {}, func() {}, &RightAngleUnit)
+	log.Println("右旋角度平均一單是 ", RightAngleUnit)
 
-	// 	adjust("後退", func() {}, func() {}, &BackwardMeterUnit)
-	// 	log.Println("後退距離平均一單是 ", BackwardMeterUnit)
+	adjust("後退", func() {}, func() {}, &BackwardMeterUnit)
+	log.Println("後退距離平均一單是 ", BackwardMeterUnit)
 
-	// 	adjust("左旋", func() {}, func() {}, &LeftAngleUnit)
-	// 	log.Println("左旋角度平均一單是 ", LeftAngleUnit)
+	adjust("左旋", func() {}, func() {}, &LeftAngleUnit)
+	log.Println("左旋角度平均一單是 ", LeftAngleUnit)
 
 	for { // 非同步規劃路線
 		log.Println("請輸入移動路徑(WASD)，完成請輸入C，重新校准請輸入R")
@@ -135,19 +135,21 @@ func run(moves []string) {
 
 		if firstMove {
 			backMoves = append(backMoves, Right, Right)
+			firstMove = false
 		}
 
 		switch move {
 		case Up:
-			backMoves = append(backMoves, Right, Right, Up)
-		case Down:
 			backMoves = append(backMoves, Up)
+		case Down:
+			backMoves = append(backMoves, Down)
 		case Left:
 			backMoves = append(backMoves, Right)
 		case Right:
 			backMoves = append(backMoves, Left)
 		}
 	}
+	backMoves = append(backMoves, Right, Right)
 
 	log.Println("準備回去 -> ", backMoves)
 	for i := 0; i < len(backMoves); i++ {
