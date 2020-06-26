@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/go-telegram-bot-api/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 var textKeyboard = tgbotapi.NewInlineKeyboardMarkup(
@@ -30,7 +30,7 @@ func NewBot(token string) (bot *tgbotapi.BotAPI, err error) {
 	if err != nil {
 		return
 	}
-	bot.Debug = true
+	bot.Debug = false
 	return
 }
 
@@ -48,5 +48,11 @@ func CreateUpdateChannel(bot *tgbotapi.BotAPI, timeout, offset, limit int) (upda
 func NewReplyMessage(chat int64, to int, text string) (msg tgbotapi.MessageConfig) {
 	msg = tgbotapi.NewMessage(chat, text)
 	msg.ReplyToMessageID = to
+	return
+}
+
+// NewMessage 建立回覆訊息
+func NewMessage(chat int64, text string) (msg tgbotapi.MessageConfig) {
+	msg = tgbotapi.NewMessage(chat, text)
 	return
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -28,6 +29,13 @@ func main() {
 	time.Sleep(time.Millisecond * 500)
 	updateChan.Clear()
 	log.Println("建立Telegram通道成功, 開始等待訊息")
+
+	ips, err := GetLocalIPs()
+	if err != nil {
+		bot.Send(NewMessage(-429085447, "開機成功，但是擷取ＩＰ失敗: "+err.Error()))
+	} else {
+		bot.Send(NewMessage(-429085447, "開機成功，本機IP如下:\n"+strings.Join(ips, "\n")))
+	}
 
 	for {
 		select {
