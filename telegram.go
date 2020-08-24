@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/go-telegram-bot-api/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 var textKeyboard = tgbotapi.NewInlineKeyboardMarkup(
@@ -9,6 +9,7 @@ var textKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardButtonURL("🚄", "https://irs.thsrc.com.tw/IMINT/"),
 		tgbotapi.NewInlineKeyboardButtonSwitch("🔑", "key"),
 		tgbotapi.NewInlineKeyboardButtonData("🔒", "lock"),
+		tgbotapi.NewInlineKeyboardButtonData("🤖", "more"),
 	),
 )
 var numericKeyboard = tgbotapi.NewReplyKeyboard(

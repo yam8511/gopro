@@ -3,10 +3,11 @@ package main
 import (
 	"fmt"
 	"log"
+	"runtime/debug"
 	"sync"
 	"time"
 
-	"github.com/go-telegram-bot-api/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 var wg = sync.WaitGroup{}
@@ -78,11 +79,30 @@ func CallbackEndpoint(bot *tgbotapi.BotAPI, uid int, cb *tgbotapi.CallbackQuery)
 		cb.ID,
 		cb.InlineMessageID,
 	)
-	ca := tgbotapi.NewCallback(cb.ID, "跳出CB")
-	res, err := bot.AnswerCallbackQuery(ca)
-	if err != nil || res.Ok {
-		ca = tgbotapi.NewCallbackWithAlert(cb.ID, "CB錯誤: "+err.Error())
-		bot.AnswerCallbackQuery(ca)
+
+	if cb.Data == "more" {
+		markup := tgbotapi.NewInlineKeyboardMarkup(
+			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData("新的回應🥶", "回傳Data按鈕"),
+				tgbotapi.NewInlineKeyboardButtonSwitch("歡迎大家分享🥺", "回傳Switch按鈕"),
+				tgbotapi.NewInlineKeyboardButtonURL("訂閱並且分享按讚🥳", "https://www.youtube.com/watch?v=FsFZOtDowF0&t=70s"),
+			),
+		)
+
+		reply := tgbotapi.NewEditMessageText(
+			cb.Message.Chat.ID,
+			cb.Message.MessageID,
+			"升級選項",
+		)
+		reply.ReplyMarkup = &markup
+		bot.Send(reply)
+	} else {
+		ca := tgbotapi.NewCallback(cb.ID, "跳出CB")
+		res, err := bot.AnswerCallbackQuery(ca)
+		if err != nil || !res.Ok {
+			ca = tgbotapi.NewCallbackWithAlert(cb.ID, "CB錯誤: "+err.Error())
+			bot.AnswerCallbackQuery(ca)
+		}
 	}
 }
 
@@ -120,6 +140,7 @@ func UpdateMaster(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			defer func(uid int) {
 				if r := recover(); r != nil {
 					log.Printf("[#%d]發生Panic! 原因[%v]\n", uid, r)
+					debug.PrintStack()
 				}
 			}(update.UpdateID)
 			CallbackEndpoint(bot, update.UpdateID, update.CallbackQuery)

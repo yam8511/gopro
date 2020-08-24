@@ -12,6 +12,8 @@ func main() {
 		log.Fatal("創建API機器人失敗,", err.Error())
 	}
 
+	bot.RemoveWebhook()
+
 	person := "NPC"
 	if !bot.Self.IsBot {
 		person = "人類"
