@@ -2,10 +2,7 @@ package main
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"log"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -15,44 +12,21 @@ import (
 
 type Payload struct {
 	Event string
+	Error string
 	UUID  string
 	Nodes []string
 	Step  int
 }
 
 type Flow struct {
-	Title      string
-	More       bool
-	NoAction   bool
-	Master     bool
-	Deploy     func() error
-	DeployNode func(node string) error
-	DeployMore func(serverNodes, agentNodes []string) error
-}
-
-func deployRegistry(node string) error {
-	nodes := getIPs()
-	errCh := make(chan error)
-	for _, ip := range nodes {
-		go func(ip string) {
-
-			errCh <- nil
-		}(ip)
-	}
-
-	txt := ""
-	for i := 0; i < len(nodes); i++ {
-		err := <-errCh
-		if err != nil {
-			txt += err.Error() + "\n"
-		}
-	}
-
-	if txt != "" {
-		return errors.New(txt)
-	}
-
-	return nil
+	Title             string
+	More              bool
+	NoAction          bool
+	Master            bool
+	Deploy            func() error
+	DeployNode        func(node string) error
+	DeployMasterNode  func(node, token string) error
+	DeployClusterNode func(nodeMaster, token string, serverNodes, agentNodes []string) error
 }
 
 func guide(c *gin.Context) {
@@ -82,6 +56,8 @@ func guide(c *gin.Context) {
 	}()
 
 	var nextUUID, masterNode string
+	var token string
+	var step int
 	NextUID := func() string {
 		nextUUID = uuid.New().String()
 		return nextUUID
@@ -90,83 +66,108 @@ func guide(c *gin.Context) {
 	flows := []Flow{
 		{
 			Title:      "請選擇一台 Registry Node",
-			DeployNode: nil,
+			DeployNode: deployRegistry,
 		},
 		{
-			Title:      "請選擇一台 Master Node",
-			DeployNode: nil,
-			Master:     true,
+			Title:            "請選擇一台 Master Node",
+			DeployMasterNode: deployMaster,
+			Master:           true,
 		},
 		{
-			Title:      "請選擇 Server Node (未選作為 Agent Node)",
-			More:       true,
-			DeployMore: nil,
+			Title:             "請選擇 Server Node (未選作為 Agent Node)",
+			More:              true,
+			DeployClusterNode: deployCluster,
 		},
 		{
 			Title:      "請選擇一台 Node 作為日誌儲存",
-			DeployNode: nil,
+			DeployNode: deployRegistry,
 		},
 		{
 			Title:      "請選擇一台 Node 作為監控儲存",
-			DeployNode: nil,
+			DeployNode: deployRegistry,
 		},
 		{
 			Title:      "請選擇一台 Node 作為監控介面(Dashboard)",
-			DeployNode: nil,
+			DeployNode: deployRegistry,
 		},
 		{
 			Title:    "部署Database",
 			NoAction: true,
-			Deploy:   nil,
+			Deploy:   deploy,
 		},
 		{
 			Title:    "部署AI",
 			NoAction: true,
-			Deploy:   nil,
+			Deploy:   deploy,
 		},
 		{
 			Title:    "部署排程",
 			NoAction: true,
-			Deploy:   nil,
+			Deploy:   deploy,
 		},
 		{
 			Title:    "部署服務",
 			NoAction: true,
-			Deploy:   nil,
+			Deploy:   deploy,
 		},
 	}
 
-	for i, flow := range flows {
-		step := i + 1
+	start := func() error {
+		return conn.WriteJSON(Payload{
+			Event: "start",
+			Step:  step,
+		})
+	}
+
+	end := func() error {
+		return conn.WriteJSON(Payload{
+			Event: "end",
+			Step:  step,
+		})
+	}
+
+	pushIP := func() error {
+		return conn.WriteJSON(Payload{
+			Event: "get_ip",
+			UUID:  NextUID(),
+			Nodes: getIPs(),
+			Step:  step,
+		})
+	}
+
+	pushError := func(err error) {
+		log.Println("部署失敗: ", err)
+		_ = conn.WriteJSON(Payload{
+			Event: "error",
+			Error: err.Error(),
+			UUID:  NextUID(),
+			Step:  step,
+		})
+	}
+
+	for _, flow := range flows {
+		step++
 
 		log.Printf("%d. %s", step, flow.Title)
 
 		if flow.NoAction {
-			err = conn.WriteJSON(Payload{
-				Event: "start",
-				Step:  step,
-			})
-			if err != nil {
+			if start() != nil {
 				return
 			}
-			flow.Deploy()
-			time.Sleep(time.Second)
-			err = conn.WriteJSON(Payload{
-				Event: "done",
-				Step:  step,
-			})
+
+			err = flow.Deploy()
 			if err != nil {
+				log.Println("部署失敗: ", err)
+				pushError(err)
+				return
+			}
+
+			if end() != nil {
 				return
 			}
 		} else {
 		LOOP:
-			err = conn.WriteJSON(Payload{
-				Event: "get_ip",
-				UUID:  NextUID(),
-				Nodes: getIPs(),
-				Step:  step,
-			})
-			if err != nil {
+			if pushIP() != nil {
 				return
 			}
 
@@ -216,30 +217,58 @@ func guide(c *gin.Context) {
 					}
 				}
 
-				flow.DeployMore(serverNodes, agentNodes)
-				fmt.Println(serverNodes, agentNodes)
+				if start() != nil {
+					return
+				}
+
+				err := flow.DeployClusterNode(masterNode, token, serverNodes, agentNodes)
+				if err != nil {
+					log.Println("部署失敗: ", err)
+					pushError(err)
+					return
+				}
+
+				if end() != nil {
+					return
+				}
 			} else {
 				node := r.Get("node").String()
 				if !inNodes(node, getIPs()) {
 					goto LOOP
 				}
 
-				if flow.Master {
-					masterNode = node
+				if start() != nil {
+					return
 				}
 
-				flow.DeployNode(node)
-				fmt.Println(node)
-			}
+				if flow.Master {
+					masterNode = node
+					if !isDebug() {
+						token = uuid.New().String()
+					}
+					err = flow.DeployMasterNode(node, token)
+				} else {
+					err = flow.DeployNode(node)
+				}
 
-			fmt.Println()
+				if err != nil {
+					log.Println("部署失敗: ", err)
+					pushError(err)
+					return
+				}
+
+				if end() != nil {
+					return
+				}
+			}
 		}
 	}
 
+	step++
 	err = conn.WriteJSON(Payload{
 		Event: "finish",
 		UUID:  NextUID(),
-		Step:  11,
+		Step:  step,
 	})
 	if err != nil {
 		return

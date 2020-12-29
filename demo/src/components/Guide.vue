@@ -1,19 +1,15 @@
 <template>
-  <h1>🚀 {{ msg }} 🌏</h1>
+  <h1>🚀 Cluster Setup 🌏</h1>
 
   <div v-if="danger != ''" class="w3-panel w3-pale-red w3-border">
     <h3>{{ danger }}</h3>
+    <h3>重新請刷新頁面</h3>
   </div>
 
   <div v-if="warning != ''" class="w3-panel w3-pale-yellow w3-border">
     <h3>{{ warning }}</h3>
   </div>
 
-  <div
-    class="w3-container w3-margin"
-    :class="{ 'w3-disabled': danger != '' || finish }"
-  ></div>
-  <template> </template>
   <!-- 渲染每個步驟 -->
   <div
     v-for="(stage, index_stage) in show_stages"
@@ -21,7 +17,7 @@
     class="w3-center w3-container w3-margin"
     :class="{
       loading,
-      'w3-disabled': finish,
+      'w3-disabled': finish || closed,
       'w3-panel w3-leftbar w3-border-blue': step == index_stage + 1,
     }"
   >
@@ -95,10 +91,7 @@
 
 <script>
 export default {
-  name: "HelloWorld",
-  props: {
-    msg: String,
-  },
+  name: "Guide",
   data() {
     return {
       ws: null,
@@ -111,6 +104,7 @@ export default {
       step: 0,
       loading: false,
       finish: false,
+      closed: false,
     };
   },
   computed: {
@@ -124,9 +118,7 @@ export default {
   methods: {
     reset() {
       this.warning = "";
-      this.nodes = [];
       this.uuid = "";
-      this.step = 0;
       this.loading = false;
     },
     send(data) {
@@ -189,15 +181,16 @@ export default {
       this.decide(this.stages[index_stage].selected_node);
     },
     decide(n) {
-      this.loading = true;
       this.send(n);
     },
     open_conn(ws) {
       this.ws = ws;
       this.danger = "";
+      this.closed = false;
     },
     conn_closed() {
       this.reset();
+      this.closed = true;
     },
     process_error(e) {
       this.danger = e;
@@ -205,6 +198,10 @@ export default {
     receive_message(e) {
       let data = JSON.parse(e.data);
       // console.log("接收資料", data);
+      if (data.Event === "error") {
+        this.process_error(data.Error);
+        return;
+      }
 
       if (data.Event === "get_ip") {
         this.nodes = data.Nodes;
@@ -214,11 +211,9 @@ export default {
         return;
       }
 
-      this.loading = false;
       this.uuid = data.UUID;
       this.step = data.Step;
       const index_stage = data.Step - 1;
-      setTimeout(() => window.scrollBy(0, document.body.scrollHeight), 200);
 
       if (data.Event === "finish") {
         this.finish = true;
@@ -226,14 +221,17 @@ export default {
         return;
       }
 
-      if (this.stages[index_stage].no_action) {
-        if (data.Event === "done") {
-          this.stages[index_stage].done = true;
-          setTimeout(() => window.scrollBy(0, document.body.scrollHeight), 200);
-        } else if (data.Event === "start") {
-          this.stages[index_stage].done = false;
-          setTimeout(() => window.scrollBy(0, document.body.scrollHeight), 200);
-        }
+      if (data.Event === "start") {
+        this.loading = true;
+        this.stages[index_stage].done = false;
+        setTimeout(() => window.scrollBy(0, document.body.scrollHeight), 200);
+        return;
+      }
+
+      if (data.Event === "end") {
+        this.loading = false;
+        this.stages[index_stage].done = true;
+        setTimeout(() => window.scrollBy(0, document.body.scrollHeight), 200);
         return;
       }
 
@@ -251,11 +249,13 @@ export default {
     this.stages = [
       {
         title: "請選擇一台 Registry Node",
+        done: false,
         selected_node: "",
         decide: this.decide_node,
       },
       {
         title: "請選擇一台 Master Node",
+        done: false,
         selected_node: "",
         decide: (index_stage, n) => {
           this.decide_node(index_stage, n);
@@ -264,27 +264,32 @@ export default {
       },
       {
         title: "請選擇 Server Node (未選作為 Agent Node)",
+        done: false,
         selected_node: [],
         more: true,
         decide: this.decide_more,
       },
       {
         title: "請選擇一台 Node 作為日誌儲存",
+        done: false,
         selected_node: "",
         decide: this.decide_node,
       },
       {
         title: "請選擇一台 Node 作為監控儲存",
+        done: false,
         selected_node: "",
         decide: this.decide_node,
       },
       {
         title: "請選擇一台 Node 作為監控介面(Dashboard)",
+        done: false,
         selected_node: "",
         decide: this.decide_node,
       },
       {
         title: "部署Database",
+        done: false,
         done: false,
         no_action: true,
       },
@@ -337,10 +342,6 @@ let connect = (open_conn, receive_message, process_error, conn_closed) => {
   ws.onclose = (e) => {
     console.warn("連線關閉", e);
     conn_closed();
-    setTimeout(
-      () => connect(open_conn, receive_message, process_error, conn_closed),
-      2000
-    );
   };
 };
 </script>

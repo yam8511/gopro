@@ -11,16 +11,16 @@
   >
     <h1 class="w3-button w3-blue w3-round-large">Start Setup</h1>
   </div>
-  <HelloWorld v-else msg="Cluster Setup" />
+  <Guide v-else />
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld.vue";
+import Guide from "./components/Guide.vue";
 
 export default {
   name: "App",
   components: {
-    HelloWorld,
+    Guide,
   },
   data() {
     return {

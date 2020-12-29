@@ -1,11 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -18,14 +16,19 @@ import (
 
 const NODES = "./data/nodes"
 const PUBLIC = "./data/public"
+const PORT = ":16219"
+const INSTALL = "./data/pack/install.sh"
 
 var ips []string
 var ipmx *sync.RWMutex
 var getIPs func() []string
 var setIPs func(newIPs []string)
 var ipCH = make(chan []string, 1)
+var localIPs map[string]string
 
 func init() {
+	localIPs = localAvailableIPs()
+
 	// ====== STEP 0 ======
 	// >>>>>> 讀取所有node
 	nodeBytes, err := ioutil.ReadFile(NODES)
@@ -60,20 +63,6 @@ func main() {
 	*/
 
 	// >>>>>> 開啟瀏覽器
-	var port string
-	for {
-		port = "8000"
-		fmt.Print("請輸入要開啟瀏覽器的Port [8000 - 35565] 不輸入預設為8000 \n> ")
-		fmt.Scanln(&port)
-		port = strings.TrimSpace(port)
-		p, err := strconv.Atoi(port)
-		if err != nil || p < 8000 || p > 35565 {
-			log.Println("請輸入數字 [8000 - 35565]")
-		} else {
-			break
-		}
-	}
-
 	gin.SetMode(gin.ReleaseMode)
 	var r *gin.Engine
 	if isDebug() {
@@ -86,7 +75,7 @@ func main() {
 	deploy := r.Group("/deploy")
 	{
 		deploy.GET("/guide", guide)
-		deploy.POST("/registry", func(c *gin.Context) {})
+		deploy.POST("/registry", processRegistry)
 		deploy.POST("/master", func(c *gin.Context) {})
 		deploy.POST("/server", func(c *gin.Context) {})
 		deploy.POST("/monitoring", func(c *gin.Context) {})
@@ -95,11 +84,11 @@ func main() {
 	}
 
 	if !isDebug() {
-		browser.OpenURL("http://127.0.0.1:" + port)
+		browser.OpenURL("http://127.0.0.1" + PORT)
 	}
 
-	log.Println("伺服器監聽: " + port)
-	err := r.Run(":" + port)
+	log.Println("伺服器監聽: http://127.0.0.1" + PORT)
+	err := r.Run(PORT)
 	if err != nil {
 		log.Fatal(err)
 	}

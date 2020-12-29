@@ -10,7 +10,7 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/pkg/browser v0.0.0-20201207095918-0426ae3fba23
 	github.com/tidwall/gjson v1.6.7
-	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
+	github.com/txn2/txeh v1.3.0
 	golang.org/x/sys v0.0.0-20201223074533-0d417f636930 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7
 )
