@@ -3,6 +3,7 @@ package helloworld
 import (
 	"context"
 	"errors"
+	"fmt"
 	pb "gopro/pb/helloworld"
 	"log"
 	"net"
@@ -18,7 +19,7 @@ type server struct {
 	pb.UnimplementedGreeterServer
 }
 
-func (server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
+func (*server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
 	if in.GetName() == "Mr. 3" {
 		return nil, errors.New("禁止進入")
 	}
@@ -28,6 +29,25 @@ func (server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply
 	res := &pb.HelloReply{Message: msg}
 	log.Println("Bye~ ", in.GetName())
 	return res, nil
+}
+
+func (*server) KeepHello(stream pb.Greeter_KeepHelloServer) error {
+	in, err := stream.Recv()
+	if err != nil {
+		return err
+	}
+
+	msg := "Hello~ " + in.GetName()
+	for i := 0; i < 5; i++ {
+		log.Println(msg, i)
+		err = stream.Send(&pb.HelloReply{Message: fmt.Sprint(msg, i)})
+		if err != nil {
+			return err
+		}
+	}
+	log.Println("Finish")
+
+	return nil
 }
 
 const (

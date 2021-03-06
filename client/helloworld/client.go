@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"sync"
 
 	pb "gopro/pb/helloworld"
@@ -18,7 +19,7 @@ const (
 )
 
 func RunClient() {
-	conn, err := grpc.Dial(port, grpc.WithInsecure(), grpc.WithBlock())
+	conn, err := grpc.Dial(os.Getenv("IP")+port, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -26,7 +27,7 @@ func RunClient() {
 	c := pb.NewGreeterClient(conn)
 
 	wg := sync.WaitGroup{}
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 100000; i++ {
 		log.Println("Init", i)
 		wg.Add(1)
 		go func(i int) {

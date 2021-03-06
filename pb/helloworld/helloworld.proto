@@ -6,11 +6,13 @@ option go_package = "pb/helloworld;pb_helloworld";
 service Greeter {
     // Sends a greeting
     rpc SayHello (HelloRequest) returns (HelloReply) {}
+    rpc KeepHello (stream HelloRequest) returns (stream HelloReply) {}
 }
 
 // The request message containing the user's name.
 message HelloRequest {
     string name = 1;
+    bytes img = 2;
 }
 
 // The response message containing the greetings
